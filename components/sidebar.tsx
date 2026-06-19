@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
 
 // Minimal icon components to avoid external dependency
 type IconProps = { size?: number }
@@ -132,10 +133,29 @@ const HelpCircle = ({ size = 24 }: IconProps) => (
   </svg>
 )
 
+const Shield = ({ size = 18 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
 export default function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
 
-  const menuItems = [
+  const baseMenuItems = [
     { label: 'DASHBOARD', path: '/dashboard' },
     { label: 'ACCOUNTS', path: '/bank-accounts' },
     { label: 'CARDS', path: '/cards' },
@@ -145,6 +165,10 @@ export default function Sidebar() {
     { label: 'SMART SPEND', path: '/smart-spend' },
     { label: 'E-STATEMENT', path: '/e-statement' }
   ]
+
+  const menuItems = user?.role === 'admin'
+    ? [...baseMenuItems, { label: 'ADMIN PANEL', path: '/admin' }]
+    : baseMenuItems
 
   return (
     <aside className="sidebar">
@@ -165,6 +189,7 @@ export default function Sidebar() {
                   {item.label === 'DASHBOARD' && <LayoutGrid size={18} />}
                   {item.label === 'CARDS' && <CreditCard size={18} />}
                   {item.label === 'SAVINGS JARS' && <PiggyBank size={18} />}
+                  {item.label === 'ADMIN PANEL' && <Shield size={18} />}
                   {item.label}
                 </button>
               </Link>

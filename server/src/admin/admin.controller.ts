@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Body, Param, UseGuards, ParseIntPipe, BadRequestException } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
@@ -21,6 +21,52 @@ export class AdminController {
       ok: true,
       message: 'System overview.',
       ...data,
+    }
+  }
+
+  @Post('users/:id/role')
+  @ApiOperation({ summary: 'Update a user role (Admin only)' })
+  async updateUserRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('role') role: string,
+  ) {
+    if (!role || (role !== 'admin' && role !== 'customer')) {
+      throw new BadRequestException('Invalid role. Role must be admin or customer.')
+    }
+    try {
+      const user = await this.adminService.updateUserRole(id, role)
+      return {
+        ok: true,
+        message: 'User role updated successfully.',
+        data: user,
+      }
+    } catch (err: any) {
+      throw new BadRequestException(err.message)
+    }
+  }
+
+  @Post('accounts/:accountNumber/adjust-balance')
+  @ApiOperation({ summary: 'Adjust an account balance (Admin only)' })
+  async adjustAccountBalance(
+    @Param('accountNumber') accountNumber: string,
+    @Body('amount') amount: number,
+    @Body('action') action: 'set' | 'deposit' | 'withdraw',
+  ) {
+    if (amount === undefined || amount === null || isNaN(amount) || amount < 0) {
+      throw new BadRequestException('Amount must be a positive number.')
+    }
+    if (!action || (action !== 'set' && action !== 'deposit' && action !== 'withdraw')) {
+      throw new BadRequestException('Action must be set, deposit, or withdraw.')
+    }
+    try {
+      const account = await this.adminService.adjustAccountBalance(accountNumber, Number(amount), action)
+      return {
+        ok: true,
+        message: 'Account balance adjusted successfully.',
+        data: account,
+      }
+    } catch (err: any) {
+      throw new BadRequestException(err.message)
     }
   }
 }
