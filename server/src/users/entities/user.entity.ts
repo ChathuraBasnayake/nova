@@ -1,9 +1,9 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Entity,
   OneToMany,
+  PrimaryGeneratedColumn
 } from 'typeorm'
 import { Account } from '../../accounts/entities/account.entity'
 
@@ -36,6 +36,9 @@ export class User {
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date
 
-  @OneToMany(() => Account, (account) => account.user)
+  @OneToMany(
+    () => Account,
+    (account) => account.user
+  )
   accounts: Account[]
 }

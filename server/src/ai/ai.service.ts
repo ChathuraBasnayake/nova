@@ -1,10 +1,10 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from 'typeorm'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { In, Repository } from 'typeorm'
 import { Account } from '../accounts/entities/account.entity'
-import { Transaction } from '../transactions/entities/transaction.entity'
 import { Budget } from '../budgets/entities/budget.entity'
+import { Transaction } from '../transactions/entities/transaction.entity'
 
 @Injectable()
 export class AiService {
@@ -17,50 +17,66 @@ export class AiService {
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
     @InjectRepository(Budget)
-    private readonly budgetsRepository: Repository<Budget>,
+    private readonly budgetsRepository: Repository<Budget>
   ) {
     const apiKey = process.env.GEMINI_API_KEY
     if (apiKey) {
       this.logger.log('Initializing Gemini AI client...')
       this.ai = new GoogleGenerativeAI(apiKey)
     } else {
-      this.logger.warn('GEMINI_API_KEY environment variable is not defined. Falling back to rule-based insights.')
+      this.logger.warn(
+        'GEMINI_API_KEY environment variable is not defined. Falling back to rule-based insights.'
+      )
     }
   }
 
   private async buildRagContext(userId: number): Promise<string> {
     const accounts = await this.accountsRepository.find({ where: { userId } })
-    const accountNumbers = accounts.map(a => a.accountNumber)
+    const accountNumbers = accounts.map((a) => a.accountNumber)
 
     let transactionsText = 'No recent transactions found.'
     if (accountNumbers.length > 0) {
       const txs = await this.transactionsRepository.find({
         where: [
           { fromAccount: In(accountNumbers) },
-          { toAccount: In(accountNumbers) },
+          { toAccount: In(accountNumbers) }
         ],
         order: { createdAt: 'DESC' },
-        take: 15,
+        take: 15
       })
 
       if (txs.length > 0) {
-        transactionsText = txs.map(t => {
-          const isDebit = accountNumbers.includes(t.fromAccount)
-          const direction = isDebit ? 'OUTGOING' : 'INCOMING'
-          const dateStr = new Date(t.createdAt).toISOString().split('T')[0]
-          return `- Date: ${dateStr}, Type: ${direction}, Amount: Rs. ${t.amount}, Category: ${t.category}, Desc: "${t.description}"`
-        }).join('\n')
+        transactionsText = txs
+          .map((t) => {
+            const isDebit = accountNumbers.includes(t.fromAccount)
+            const direction = isDebit ? 'OUTGOING' : 'INCOMING'
+            const dateStr = new Date(t.createdAt).toISOString().split('T')[0]
+            return `- Date: ${dateStr}, Type: ${direction}, Amount: Rs. ${t.amount}, Category: ${t.category}, Desc: "${t.description}"`
+          })
+          .join('\n')
       }
     }
 
     const budgets = await this.budgetsRepository.find({ where: { userId } })
-    const budgetsText = budgets.length > 0
-      ? budgets.map(b => `- Category: ${b.category}, Monthly Limit: Rs. ${b.monthlyLimit}`).join('\n')
-      : 'No monthly budgets configured.'
+    const budgetsText =
+      budgets.length > 0
+        ? budgets
+            .map(
+              (b) =>
+                `- Category: ${b.category}, Monthly Limit: Rs. ${b.monthlyLimit}`
+            )
+            .join('\n')
+        : 'No monthly budgets configured.'
 
-    const accountsText = accounts.length > 0
-      ? accounts.map(a => `- Account Name: "${a.accountName}", Number: ${a.accountNumber}, Current Balance: Rs. ${a.balance}`).join('\n')
-      : 'No active bank accounts found.'
+    const accountsText =
+      accounts.length > 0
+        ? accounts
+            .map(
+              (a) =>
+                `- Account Name: "${a.accountName}", Number: ${a.accountNumber}, Current Balance: Rs. ${a.balance}`
+            )
+            .join('\n')
+        : 'No active bank accounts found.'
 
     return `
 User Financial Profile Data:
@@ -96,7 +112,7 @@ Instructions:
         return result.response.text()
       } catch (err: any) {
         this.logger.error('Gemini API call failed:', err)
-        return `I encountered an issue connecting to the AI service: ${err?.message || err}. Here is a fallback summary of your accounts: you have ${context.split('\n').filter(l => l.startsWith('-')).length} items registered.`
+        return `I encountered an issue connecting to the AI service: ${err?.message || err}. Here is a fallback summary of your accounts: you have ${context.split('\n').filter((l) => l.startsWith('-')).length} items registered.`
       }
     }
 
@@ -126,25 +142,40 @@ ${context}
 
   private generateSimulatedResponse(msg: string, context: string): string {
     const lower = msg.toLowerCase()
-    if (lower.includes('balance') || lower.includes('how much money') || lower.includes('accounts')) {
+    if (
+      lower.includes('balance') ||
+      lower.includes('how much money') ||
+      lower.includes('accounts')
+    ) {
       if (context.includes('Current Balance:')) {
-        const matches = context.match(/- Account Name: "[^"]*", Number: \d+, Current Balance: Rs. \d+(\.\d+)?/g)
+        const matches = context.match(
+          /- Account Name: "[^"]*", Number: \d+, Current Balance: Rs. \d+(\.\d+)?/g
+        )
         if (matches) {
-          return `You currently have ${matches.length} active account(s): ${matches.map(m => m.replace('- ', '')).join(', ')}. Let me know if you'd like to plan a savings goal!`
+          return `You currently have ${matches.length} active account(s): ${matches.map((m) => m.replace('- ', '')).join(', ')}. Let me know if you'd like to plan a savings goal!`
         }
       }
       return 'You currently have no bank accounts. You can create one in the Accounts tab.'
     }
-    if (lower.includes('budget') || lower.includes('limit') || lower.includes('spent')) {
+    if (
+      lower.includes('budget') ||
+      lower.includes('limit') ||
+      lower.includes('spent')
+    ) {
       if (context.includes('Category:')) {
         return 'You have some custom category limits configured. In your Smart Spend dashboard, you can track progress bars. Would you like me to help you adjust your limits?'
       }
       return 'You have not set any monthly budgets yet. Would you like me to suggest some budget limits based on your past spending?'
     }
-    if (lower.includes('spend') || lower.includes('transaction') || lower.includes('history') || lower.includes('uber')) {
+    if (
+      lower.includes('spend') ||
+      lower.includes('transaction') ||
+      lower.includes('history') ||
+      lower.includes('uber')
+    ) {
       return 'Based on your recent transactions, your largest category of outgoing transfers is Food (e.g. Uber Eats). Setting up a budget limit will help you save!'
     }
 
-    return "Hello! I am Nova, your AI assistant. I can help you analyze your balances, explain your spending breakdown, suggest category budgets, or answer general financial questions. What would you like to know today?"
+    return 'Hello! I am Nova, your AI assistant. I can help you analyze your balances, explain your spending breakdown, suggest category budgets, or answer general financial questions. What would you like to know today?'
   }
 }

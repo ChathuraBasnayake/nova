@@ -1,13 +1,12 @@
-import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
+import jwt from 'jsonwebtoken'
 
 // ── Secret Management ──────────────────────────────────────────────
 // In production set SESSION_SECRET in .env.local — at least 32 random bytes.
 // If absent we generate one at boot so the app never runs unsigned,
 // but tokens won't survive a restart.
 const SESSION_SECRET: string =
-  process.env.SESSION_SECRET ||
-  crypto.randomBytes(64).toString('hex')
+  process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex')
 
 const TOKEN_EXPIRY = '8h' // 8-hour sessions
 
@@ -50,7 +49,9 @@ export function verifySessionToken(request: Request): AuthResult | null {
  * Returns null when authentication succeeds (caller gets AuthResult from verifySessionToken),
  * or a Response when it fails — caller should return it immediately.
  */
-export function requireAuth(request: Request): { auth: AuthResult } | { response: Response } {
+export function requireAuth(
+  request: Request
+): { auth: AuthResult } | { response: Response } {
   const auth = verifySessionToken(request)
   if (!auth) {
     return {
@@ -63,7 +64,9 @@ export function requireAuth(request: Request): { auth: AuthResult } | { response
   return { auth }
 }
 
-export function requireAdmin(request: Request): { auth: AuthResult } | { response: Response } {
+export function requireAdmin(
+  request: Request
+): { auth: AuthResult } | { response: Response } {
   const result = requireAuth(request)
   if ('response' in result) return result
 

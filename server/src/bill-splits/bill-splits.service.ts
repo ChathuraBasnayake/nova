@@ -1,17 +1,17 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Injectable,
+  NotFoundException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { BillSplit } from './entities/bill-split.entity'
-import { User } from '../users/entities/user.entity'
 import { Account } from '../accounts/entities/account.entity'
-import { CreateBillSplitDto } from './dto/create-bill-split.dto'
 import { NotificationsService } from '../notifications/notifications.service'
 import { TransferService } from '../transfer/transfer.service'
+import { User } from '../users/entities/user.entity'
+import { CreateBillSplitDto } from './dto/create-bill-split.dto'
+import { BillSplit } from './entities/bill-split.entity'
 
 @Injectable()
 export class BillSplitsService {
@@ -23,18 +23,27 @@ export class BillSplitsService {
     @InjectRepository(Account)
     private readonly accountsRepository: Repository<Account>,
     private readonly notificationsService: NotificationsService,
-    private readonly transferService: TransferService,
+    private readonly transferService: TransferService
   ) {}
 
-  async create(requesterId: number, dto: CreateBillSplitDto): Promise<BillSplit> {
-    const requester = await this.usersRepository.findOne({ where: { id: requesterId } })
+  async create(
+    requesterId: number,
+    dto: CreateBillSplitDto
+  ): Promise<BillSplit> {
+    const requester = await this.usersRepository.findOne({
+      where: { id: requesterId }
+    })
     if (!requester) {
       throw new NotFoundException('Requester user not found.')
     }
 
-    const payer = await this.usersRepository.findOne({ where: { username: dto.payerUsername } })
+    const payer = await this.usersRepository.findOne({
+      where: { username: dto.payerUsername }
+    })
     if (!payer) {
-      throw new NotFoundException(`User with username "${dto.payerUsername}" not found.`)
+      throw new NotFoundException(
+        `User with username "${dto.payerUsername}" not found.`
+      )
     }
 
     if (requester.id === payer.id) {
@@ -47,7 +56,7 @@ export class BillSplitsService {
       amount: dto.amount,
       description: dto.description,
       status: 'pending',
-      transactionId: dto.transactionId || null,
+      transactionId: dto.transactionId || null
     })
 
     const saved = await this.billSplitsRepository.save(split)
@@ -57,7 +66,7 @@ export class BillSplitsService {
       payer.id,
       'BILL_SPLIT',
       'Bill Split Request',
-      `${requester.fullName} requested Rs. ${Number(dto.amount).toLocaleString('en-US')} for: ${dto.description}`,
+      `${requester.fullName} requested Rs. ${Number(dto.amount).toLocaleString('en-US')} for: ${dto.description}`
     )
 
     return saved
@@ -66,16 +75,18 @@ export class BillSplitsService {
   async findPendingByPayer(payerId: number): Promise<any[]> {
     const splits = await this.billSplitsRepository.find({
       where: { payerId, status: 'pending' },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'DESC' }
     })
 
     const result = []
     for (const split of splits) {
-      const requester = await this.usersRepository.findOne({ where: { id: split.requesterId } })
+      const requester = await this.usersRepository.findOne({
+        where: { id: split.requesterId }
+      })
       result.push({
         ...split,
         requesterUsername: requester?.username || 'unknown',
-        requesterFullName: requester?.fullName || 'Unknown User',
+        requesterFullName: requester?.fullName || 'Unknown User'
       })
     }
     return result
@@ -84,41 +95,51 @@ export class BillSplitsService {
   async findMyRequests(requesterId: number): Promise<any[]> {
     const splits = await this.billSplitsRepository.find({
       where: { requesterId },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'DESC' }
     })
 
     const result = []
     for (const split of splits) {
-      const payer = await this.usersRepository.findOne({ where: { id: split.payerId } })
+      const payer = await this.usersRepository.findOne({
+        where: { id: split.payerId }
+      })
       result.push({
         ...split,
         payerUsername: payer?.username || 'unknown',
-        payerFullName: payer?.fullName || 'Unknown User',
+        payerFullName: payer?.fullName || 'Unknown User'
       })
     }
     return result
   }
 
-  async approve(payerId: number, splitId: number, fromAccountNumber: string): Promise<BillSplit> {
+  async approve(
+    payerId: number,
+    splitId: number,
+    fromAccountNumber: string
+  ): Promise<BillSplit> {
     const split = await this.billSplitsRepository.findOne({
-      where: { id: splitId, payerId },
+      where: { id: splitId, payerId }
     })
     if (!split) {
       throw new NotFoundException('Bill split request not found.')
     }
 
     if (split.status !== 'pending') {
-      throw new BadRequestException('This bill split has already been processed.')
+      throw new BadRequestException(
+        'This bill split has already been processed.'
+      )
     }
 
     // Find requester's accounts
     const requesterAccounts = await this.accountsRepository.find({
       where: { userId: split.requesterId },
-      order: { id: 'ASC' }, // Use primary (first) account
+      order: { id: 'ASC' } // Use primary (first) account
     })
 
     if (requesterAccounts.length === 0) {
-      throw new BadRequestException('Requester has no accounts to receive funds.')
+      throw new BadRequestException(
+        'Requester has no accounts to receive funds.'
+      )
     }
 
     const toAccountNumber = requesterAccounts[0].accountNumber
@@ -129,9 +150,9 @@ export class BillSplitsService {
         fromAccount: fromAccountNumber,
         toAccount: toAccountNumber,
         amount: Number(split.amount),
-        description: `Split Bill: ${split.description}`,
+        description: `Split Bill: ${split.description}`
       },
-      payerId,
+      payerId
     )
 
     split.status = 'approved'
@@ -144,7 +165,7 @@ export class BillSplitsService {
       split.requesterId,
       'BILL_SPLIT_APPROVED',
       'Split Request Approved',
-      `${payer?.fullName || 'Someone'} approved your split request of Rs. ${Number(split.amount).toLocaleString('en-US')}.`,
+      `${payer?.fullName || 'Someone'} approved your split request of Rs. ${Number(split.amount).toLocaleString('en-US')}.`
     )
 
     return saved
@@ -152,14 +173,16 @@ export class BillSplitsService {
 
   async decline(payerId: number, splitId: number): Promise<BillSplit> {
     const split = await this.billSplitsRepository.findOne({
-      where: { id: splitId, payerId },
+      where: { id: splitId, payerId }
     })
     if (!split) {
       throw new NotFoundException('Bill split request not found.')
     }
 
     if (split.status !== 'pending') {
-      throw new BadRequestException('This bill split has already been processed.')
+      throw new BadRequestException(
+        'This bill split has already been processed.'
+      )
     }
 
     split.status = 'declined'
@@ -171,7 +194,7 @@ export class BillSplitsService {
       split.requesterId,
       'BILL_SPLIT_DECLINED',
       'Split Request Declined',
-      `${payer?.fullName || 'Someone'} declined your split request of Rs. ${Number(split.amount).toLocaleString('en-US')}.`,
+      `${payer?.fullName || 'Someone'} declined your split request of Rs. ${Number(split.amount).toLocaleString('en-US')}.`
     )
 
     return saved

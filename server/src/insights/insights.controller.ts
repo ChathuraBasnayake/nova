@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { InsightsService } from './insights.service'
 
 @ApiTags('Insights')
@@ -19,14 +19,18 @@ export class InsightsController {
   }
 
   @Get('trends')
-  @ApiOperation({ summary: 'Get monthly spending trends over the last 6 months' })
+  @ApiOperation({
+    summary: 'Get monthly spending trends over the last 6 months'
+  })
   async getTrends(@CurrentUser('userId') userId: number) {
     const data = await this.insightsService.getTrends(userId)
     return { ok: true, data }
   }
 
   @Get('budgets')
-  @ApiOperation({ summary: 'Get budget limit versus actual spent for all categories' })
+  @ApiOperation({
+    summary: 'Get budget limit versus actual spent for all categories'
+  })
   async getBudgets(@CurrentUser('userId') userId: number) {
     const data = await this.insightsService.getBudgetStatus(userId)
     return { ok: true, data }

@@ -1,15 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
   Param,
-  UseGuards,
   ParseIntPipe,
+  Post,
+  UseGuards
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { BillSplitsService } from './bill-splits.service'
 import { CreateBillSplitDto } from './dto/create-bill-split.dto'
 
@@ -24,23 +24,25 @@ export class BillSplitsController {
   @ApiOperation({ summary: 'Request a bill split with a friend' })
   async create(
     @CurrentUser('userId') userId: number,
-    @Body() dto: CreateBillSplitDto,
+    @Body() dto: CreateBillSplitDto
   ) {
     const split = await this.billSplitsService.create(userId, dto)
     return {
       ok: true,
       message: 'Bill split request sent successfully.',
-      data: split,
+      data: split
     }
   }
 
   @Get('pending')
-  @ApiOperation({ summary: 'Retrieve pending bill split requests received by the user' })
+  @ApiOperation({
+    summary: 'Retrieve pending bill split requests received by the user'
+  })
   async findPending(@CurrentUser('userId') userId: number) {
     const splits = await this.billSplitsService.findPendingByPayer(userId)
     return {
       ok: true,
-      data: splits,
+      data: splits
     }
   }
 
@@ -50,7 +52,7 @@ export class BillSplitsController {
     const splits = await this.billSplitsService.findMyRequests(userId)
     return {
       ok: true,
-      data: splits,
+      data: splits
     }
   }
 
@@ -59,13 +61,17 @@ export class BillSplitsController {
   async approve(
     @CurrentUser('userId') userId: number,
     @Param('id', ParseIntPipe) splitId: number,
-    @Body('fromAccount') fromAccount: string,
+    @Body('fromAccount') fromAccount: string
   ) {
-    const split = await this.billSplitsService.approve(userId, splitId, fromAccount)
+    const split = await this.billSplitsService.approve(
+      userId,
+      splitId,
+      fromAccount
+    )
     return {
       ok: true,
       message: 'Bill split request approved and paid successfully.',
-      data: split,
+      data: split
     }
   }
 
@@ -73,13 +79,13 @@ export class BillSplitsController {
   @ApiOperation({ summary: 'Decline a bill split request' })
   async decline(
     @CurrentUser('userId') userId: number,
-    @Param('id', ParseIntPipe) splitId: number,
+    @Param('id', ParseIntPipe) splitId: number
   ) {
     const split = await this.billSplitsService.decline(userId, splitId)
     return {
       ok: true,
       message: 'Bill split request declined successfully.',
-      data: split,
+      data: split
     }
   }
 }

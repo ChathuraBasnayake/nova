@@ -1,8 +1,8 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn
 } from 'typeorm'
 
 @Entity('virtual_cards')
@@ -34,7 +34,13 @@ export class VirtualCard {
   @Column({ name: 'is_frozen', default: false })
   isFrozen: boolean
 
-  @Column({ name: 'daily_limit', type: 'numeric', precision: 12, scale: 2, default: 50000.00 })
+  @Column({
+    name: 'daily_limit',
+    type: 'numeric',
+    precision: 12,
+    scale: 2,
+    default: 50000.0
+  })
   dailyLimit: number
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })

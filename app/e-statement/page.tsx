@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
+import NotificationCenter from '@/components/notification-center'
 import Sidebar from '@/components/sidebar'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context'
-import NotificationCenter from '@/components/notification-center'
 
 interface Account {
   id: number
@@ -39,7 +39,7 @@ export default function EStatementPage() {
     openingBalance: 0,
     totalCredits: 0,
     totalDebits: 0,
-    closingBalance: 0,
+    closingBalance: 0
   })
   const [loadingAccounts, setLoadingAccounts] = useState(true)
   const [loadingTransactions, setLoadingTransactions] = useState(false)
@@ -48,7 +48,9 @@ export default function EStatementPage() {
   useEffect(() => {
     async function fetchAccounts() {
       try {
-        const res = await apiClient<{ ok: boolean; data: Account[] }>('/accounts')
+        const res = await apiClient<{ ok: boolean; data: Account[] }>(
+          '/accounts'
+        )
         if (res.ok && res.data && res.data.length > 0) {
           setAccounts(res.data)
           setSelectedAccount(res.data[0])
@@ -74,10 +76,11 @@ export default function EStatementPage() {
         const res = await apiClient<{ ok: boolean; data: Transaction[] }>(
           `/transactions?account=${accNum}`
         )
-        
+
         if (res.ok && res.data) {
           const rawTx = [...res.data].sort(
-            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           )
 
           let totalCredits = 0
@@ -112,10 +115,9 @@ export default function EStatementPage() {
             return {
               ...tx,
               runningBalance: currentRunning,
-              isDebit: isOutflow,
+              isDebit: isOutflow
             }
           })
-
 
           // Reverse to show newest transactions first in the table
           setTransactions(rowsWithRunningBalance.reverse())
@@ -123,7 +125,7 @@ export default function EStatementPage() {
             openingBalance,
             totalCredits,
             totalDebits,
-            closingBalance,
+            closingBalance
           })
         }
       } catch (err) {
@@ -137,7 +139,9 @@ export default function EStatementPage() {
   }, [selectedAccount])
 
   const handleAccountChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = accounts.find((acc) => acc.accountNumber === e.target.value)
+    const selected = accounts.find(
+      (acc) => acc.accountNumber === e.target.value
+    )
     setSelectedAccount(selected || null)
   }
 
@@ -155,11 +159,14 @@ export default function EStatementPage() {
     try {
       const token = localStorage.getItem('session_token')
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
-      const res = await fetch(`${apiBase}/statements/pdf?account=${selectedAccount.accountNumber}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const res = await fetch(
+        `${apiBase}/statements/pdf?account=${selectedAccount.accountNumber}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      })
+      )
       if (!res.ok) throw new Error('Failed to download statement')
       const blob = await res.blob()
       const url = window.URL.createObjectURL(blob)
@@ -189,7 +196,10 @@ export default function EStatementPage() {
                 <img src="/search.png" alt="search" />
               </button>
               <NotificationCenter />
-              <Link href="/profile" className="size-12 overflow-hidden rounded-full border-2 border-gray-200 block">
+              <Link
+                href="/profile"
+                className="size-12 overflow-hidden rounded-full border-2 border-gray-200 block"
+              >
                 <img
                   src={user?.avatarUrl || '/person-logo.png'}
                   alt="avatar"
@@ -201,7 +211,9 @@ export default function EStatementPage() {
 
           <div className="rounded-[32px] bg-white px-10 py-8 text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] mb-6">
             <div className="grid items-center gap-6 text-xl md:grid-cols-[auto_1fr]">
-              <label htmlFor="statement-account-select">Select Bank Account:</label>
+              <label htmlFor="statement-account-select">
+                Select Bank Account:
+              </label>
               {loadingAccounts ? (
                 <div className="text-sm text-gray-500">Loading accounts...</div>
               ) : accounts.length > 0 ? (
@@ -218,7 +230,9 @@ export default function EStatementPage() {
                   ))}
                 </select>
               ) : (
-                <div className="text-sm text-red-600">No bank accounts registered.</div>
+                <div className="text-sm text-red-600">
+                  No bank accounts registered.
+                </div>
               )}
             </div>
           </div>
@@ -245,15 +259,21 @@ export default function EStatementPage() {
               <div className="mt-5 text-sm leading-tight">
                 <h2 className="font-bold text-lg mb-2">Bank Statement</h2>
                 <dl className="grid grid-cols-[150px_1fr] gap-y-1">
-                  <dt className="font-semibold text-gray-700">Account Holder:</dt>
+                  <dt className="font-semibold text-gray-700">
+                    Account Holder:
+                  </dt>
                   <dd>{user?.fullName || 'N/A'}</dd>
-                  
-                  <dt className="font-semibold text-gray-700">Account Number:</dt>
+
+                  <dt className="font-semibold text-gray-700">
+                    Account Number:
+                  </dt>
                   <dd>{selectedAccount?.accountNumber || 'N/A'}</dd>
-                  
-                  <dt className="font-semibold text-gray-700">Statement Period:</dt>
+
+                  <dt className="font-semibold text-gray-700">
+                    Statement Period:
+                  </dt>
                   <dd>{getStatementPeriod()}</dd>
-                  
+
                   <dt className="font-semibold text-gray-700">Branch:</dt>
                   <dd>Colombo Head Office</dd>
                 </dl>
@@ -264,72 +284,137 @@ export default function EStatementPage() {
                 <table className="w-full table-fixed border-collapse text-left bg-white rounded-xl shadow p-4">
                   <thead>
                     <tr className="bg-gray-100 border-b border-gray-200">
-                      <th className="p-3 font-semibold text-gray-700">Opening Balance</th>
-                      <th className="p-3 font-semibold text-gray-700">Total Credits</th>
-                      <th className="p-3 font-semibold text-gray-700">Total Debits</th>
-                      <th className="p-3 font-semibold text-gray-700">Closing Balance</th>
+                      <th className="p-3 font-semibold text-gray-700">
+                        Opening Balance
+                      </th>
+                      <th className="p-3 font-semibold text-gray-700">
+                        Total Credits
+                      </th>
+                      <th className="p-3 font-semibold text-gray-700">
+                        Total Debits
+                      </th>
+                      <th className="p-3 font-semibold text-gray-700">
+                        Closing Balance
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-b border-gray-100">
-                      <td className="p-3">Rs. {Number(summary.openingBalance).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                      <td className="p-3 text-green-600 font-semibold">+Rs. {Number(summary.totalCredits).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                      <td className="p-3 text-red-600 font-semibold">-Rs. {Number(summary.totalDebits).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                      <td className="p-3 font-bold">Rs. {Number(summary.closingBalance).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                      <td className="p-3">
+                        Rs.{' '}
+                        {Number(summary.openingBalance).toLocaleString(
+                          'en-US',
+                          { minimumFractionDigits: 2 }
+                        )}
+                      </td>
+                      <td className="p-3 text-green-600 font-semibold">
+                        +Rs.{' '}
+                        {Number(summary.totalCredits).toLocaleString('en-US', {
+                          minimumFractionDigits: 2
+                        })}
+                      </td>
+                      <td className="p-3 text-red-600 font-semibold">
+                        -Rs.{' '}
+                        {Number(summary.totalDebits).toLocaleString('en-US', {
+                          minimumFractionDigits: 2
+                        })}
+                      </td>
+                      <td className="p-3 font-bold">
+                        Rs.{' '}
+                        {Number(summary.closingBalance).toLocaleString(
+                          'en-US',
+                          { minimumFractionDigits: 2 }
+                        )}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
               <div className="mt-10 border-t border-black pt-9">
-                <h3 className="text-sm font-bold text-base mb-4">Transaction Details</h3>
+                <h3 className="text-sm font-bold text-base mb-4">
+                  Transaction Details
+                </h3>
 
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm bg-white rounded-xl shadow overflow-hidden">
                     <thead>
                       <tr className="bg-gray-100 border-b border-gray-300">
-                        <th className="w-[15%] p-3 font-semibold text-gray-700">Date</th>
-                        <th className="w-[25%] p-3 font-semibold text-gray-700">Description</th>
-                        <th className="w-[15%] p-3 font-semibold text-gray-700">Reference ID</th>
-                        <th className="w-[15%] p-3 font-semibold text-gray-700">Debit(+)</th>
-                        <th className="w-[15%] p-3 font-semibold text-gray-700">Credit(-)</th>
-                        <th className="w-[15%] p-3 font-semibold text-gray-700">Balance</th>
+                        <th className="w-[15%] p-3 font-semibold text-gray-700">
+                          Date
+                        </th>
+                        <th className="w-[25%] p-3 font-semibold text-gray-700">
+                          Description
+                        </th>
+                        <th className="w-[15%] p-3 font-semibold text-gray-700">
+                          Reference ID
+                        </th>
+                        <th className="w-[15%] p-3 font-semibold text-gray-700">
+                          Debit(+)
+                        </th>
+                        <th className="w-[15%] p-3 font-semibold text-gray-700">
+                          Credit(-)
+                        </th>
+                        <th className="w-[15%] p-3 font-semibold text-gray-700">
+                          Balance
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {loadingTransactions ? (
                         <tr>
-                          <td colSpan={6} className="p-6 text-center text-gray-500 font-semibold">
+                          <td
+                            colSpan={6}
+                            className="p-6 text-center text-gray-500 font-semibold"
+                          >
                             Loading transactions...
                           </td>
                         </tr>
                       ) : transactions.length > 0 ? (
                         transactions.map((t) => {
-                          const dateStr = new Date(t.createdAt).toLocaleDateString('en-US', {
+                          const dateStr = new Date(
+                            t.createdAt
+                          ).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'
                           })
                           return (
-                            <tr key={t.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <tr
+                              key={t.id}
+                              className="border-b border-gray-100 hover:bg-gray-50"
+                            >
                               <td className="p-3 text-gray-600">{dateStr}</td>
-                              <td className="p-3 font-medium">{t.description || 'Transfer'}</td>
+                              <td className="p-3 font-medium">
+                                {t.description || 'Transfer'}
+                              </td>
                               <td className="p-3 text-gray-500">{t.id}</td>
                               <td className="p-3 text-green-600 font-semibold">
-                                {!t.isDebit ? `+Rs. ${Number(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '-'}
+                                {!t.isDebit
+                                  ? `+Rs. ${Number(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                                  : '-'}
                               </td>
                               <td className="p-3 text-red-600 font-semibold">
-                                {t.isDebit ? `-Rs. ${Number(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '-'}
+                                {t.isDebit
+                                  ? `-Rs. ${Number(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+                                  : '-'}
                               </td>
                               <td className="p-3 font-bold">
-                                Rs. {Number(t.runningBalance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                Rs.{' '}
+                                {Number(t.runningBalance).toLocaleString(
+                                  'en-US',
+                                  { minimumFractionDigits: 2 }
+                                )}
                               </td>
                             </tr>
                           )
                         })
                       ) : (
                         <tr>
-                          <td colSpan={6} className="p-6 text-center text-gray-500 font-semibold">
+                          <td
+                            colSpan={6}
+                            className="p-6 text-center text-gray-500 font-semibold"
+                          >
                             No transaction history.
                           </td>
                         </tr>

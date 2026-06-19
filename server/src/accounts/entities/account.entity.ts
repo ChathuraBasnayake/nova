@@ -1,9 +1,9 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn
 } from 'typeorm'
 import { User } from '../../users/entities/user.entity'
 
@@ -27,7 +27,10 @@ export class Account {
   @Column({ select: false, default: '0000' })
   pin: string
 
-  @ManyToOne(() => User, (user) => user.accounts)
+  @ManyToOne(
+    () => User,
+    (user) => user.accounts
+  )
   @JoinColumn({ name: 'user_id' })
   user: User
 }

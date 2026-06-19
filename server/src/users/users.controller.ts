@@ -1,20 +1,25 @@
 import {
-  Controller,
-  Put,
-  Post,
-  Body,
-  UseGuards,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Put,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags
+} from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
-import { UsersService } from './users.service'
-import { S3Service } from './s3.service'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { S3Service } from './s3.service'
+import { UsersService } from './users.service'
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -23,14 +28,14 @@ import { UpdateProfileDto } from './dto/update-profile.dto'
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly s3Service: S3Service,
+    private readonly s3Service: S3Service
   ) {}
 
   @Put('profile')
   @ApiOperation({ summary: 'Update user profile details' })
   async updateProfile(
     @CurrentUser('userId') userId: number,
-    @Body() dto: UpdateProfileDto,
+    @Body() dto: UpdateProfileDto
   ) {
     const updated = await this.usersService.updateProfile(userId, dto)
     if (!updated) {
@@ -45,8 +50,8 @@ export class UsersController {
         role: updated.role,
         fullName: updated.fullName,
         email: updated.email,
-        avatarUrl: updated.avatarUrl,
-      },
+        avatarUrl: updated.avatarUrl
+      }
     }
   }
 
@@ -56,22 +61,31 @@ export class UsersController {
   @UseInterceptors(FileInterceptor('avatar'))
   async uploadAvatar(
     @CurrentUser('userId') userId: number,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File
   ) {
     if (!file) {
       throw new BadRequestException('No avatar file provided.')
     }
 
     // Basic file validation
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp'
+    ]
     if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.')
+      throw new BadRequestException(
+        'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'
+      )
     }
 
     // Limit size to 5MB
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      throw new BadRequestException('File is too large. Maximum size allowed is 5MB.')
+      throw new BadRequestException(
+        'File is too large. Maximum size allowed is 5MB.'
+      )
     }
 
     // Upload to S3
@@ -93,8 +107,8 @@ export class UsersController {
         role: updated.role,
         fullName: updated.fullName,
         email: updated.email,
-        avatarUrl: updated.avatarUrl,
-      },
+        avatarUrl: updated.avatarUrl
+      }
     }
   }
 }

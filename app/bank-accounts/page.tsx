@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import Sidebar from '@/components/sidebar'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, { Suspense, useEffect, useState } from 'react'
 import { Search } from '@/components/Icons'
-import { apiClient } from '@/lib/api-client'
 import NotificationCenter from '@/components/notification-center'
+import Sidebar from '@/components/sidebar'
+import { apiClient } from '@/lib/api-client'
 import styles from './accounts.module.css'
 
 type Screen = 'list' | 'add' | 'edit'
@@ -231,8 +231,8 @@ function AccountsPageContent() {
         body: JSON.stringify({
           accountNumber: formData.accountNumber,
           accountName: formData.nickname || formData.accountName,
-          pin: '0000', // default pin
-        }),
+          pin: '0000' // default pin
+        })
       })
       alert('Account added successfully!')
       fetchAccounts()
@@ -272,7 +272,7 @@ function AccountsPageContent() {
       const accNum = formData.accountNumber || accountNumberParam
       await apiClient(`/accounts/${accNum}/nickname`, {
         method: 'PATCH',
-        body: JSON.stringify({ nickname: nickname.trim() }),
+        body: JSON.stringify({ nickname: nickname.trim() })
       })
       alert(`Nickname updated to: ${nickname}`)
       fetchAccounts()
@@ -289,7 +289,7 @@ function AccountsPageContent() {
 
     try {
       await apiClient(`/accounts/${accountNumber}`, {
-        method: 'DELETE',
+        method: 'DELETE'
       })
       alert('Account deleted successfully!')
       fetchAccounts()
@@ -366,13 +366,18 @@ function AccountsPageContent() {
                         Account Number: <br />
                         {acc.accountNumber}
                         <br />
-                        Balance: Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        Balance: Rs.{' '}
+                        {Number(acc.balance).toLocaleString('en-US', {
+                          minimumFractionDigits: 2
+                        })}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className={styles.loadingMsg}>No bank accounts registered.</div>
+                <div className={styles.loadingMsg}>
+                  No bank accounts registered.
+                </div>
               )}
 
               <button className={styles.addAccountCard} onClick={goToAdd}>
@@ -496,10 +501,7 @@ function AccountsPageContent() {
                     >
                       Cancel
                     </button>
-                    <button
-                      type="submit"
-                      className={styles.btnAdd}
-                    >
+                    <button type="submit" className={styles.btnAdd}>
                       Add Account
                     </button>
                     <button

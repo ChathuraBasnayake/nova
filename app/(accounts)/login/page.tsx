@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
 import Link from 'next/link'
+import React, { useState } from 'react'
 import AuthButton from '@/components/authButton'
 import { useAuth } from '@/lib/auth-context'
 
@@ -53,7 +53,10 @@ export default function LoginPage() {
       </aside>
 
       <div className="flex flex-1 items-center justify-center bg-white px-8 py-10">
-        <form onSubmit={handleSubmit} className="w-full max-w-[450px] text-center">
+        <form
+          onSubmit={handleSubmit}
+          className="w-full max-w-[450px] text-center"
+        >
           <h1 className="mb-11 text-[2.45rem] font-bold text-black text-balance">
             LOGIN
           </h1>

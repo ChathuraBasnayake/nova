@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Sidebar from '@/components/sidebar'
+import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
 import NotificationCenter from '@/components/notification-center'
+import Sidebar from '@/components/sidebar'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context'
 import styles from './admin.module.css'
@@ -45,7 +45,7 @@ interface SystemStats {
 export default function AdminPage() {
   const router = useRouter()
   const { user, logout } = useAuth()
-  
+
   // Data State
   const [users, setUsers] = useState<UserProfile[]>([])
   const [accounts, setAccounts] = useState<UserAccount[]>([])
@@ -60,17 +60,21 @@ export default function AdminPage() {
 
   // Page State
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'accounts' | 'logs'>('overview')
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'users' | 'accounts' | 'logs'
+  >('overview')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null)
-  
+
   // Event & Role Filters
   const [roleFilter, setRoleFilter] = useState('all')
   const [eventFilter, setEventFilter] = useState('all')
 
   // Modals
   const [showBalanceModal, setShowBalanceModal] = useState(false)
-  const [selectedAccount, setSelectedAccount] = useState<UserAccount | null>(null)
+  const [selectedAccount, setSelectedAccount] = useState<UserAccount | null>(
+    null
+  )
   const [adjustForm, setAdjustForm] = useState({
     amount: '',
     action: 'deposit' as 'deposit' | 'withdraw' | 'set'
@@ -90,18 +94,20 @@ export default function AdminPage() {
         auditLogs: SystemAuditLog[]
         stats: SystemStats
       }>('/admin/system')
-      
+
       if (res) {
         setUsers(res.users || [])
         setAccounts(res.accounts || [])
         setAuditLogs(res.auditLogs || [])
-        setStats(res.stats || {
-          totalUsers: 0,
-          totalAccounts: 0,
-          totalDeposits: 0,
-          totalTransactions: 0,
-          totalVolume: 0
-        })
+        setStats(
+          res.stats || {
+            totalUsers: 0,
+            totalAccounts: 0,
+            totalDeposits: 0,
+            totalTransactions: 0,
+            totalVolume: 0
+          }
+        )
       }
     } catch (err) {
       console.error('Failed to load admin data:', err)
@@ -128,7 +134,7 @@ export default function AdminPage() {
     try {
       await apiClient(`/admin/users/${userId}/role`, {
         method: 'POST',
-        body: JSON.stringify({ role: newRole }),
+        body: JSON.stringify({ role: newRole })
       })
       alert(`User role changed to ${newRole.toUpperCase()} successfully!`)
       await fetchAdminData()
@@ -160,13 +166,16 @@ export default function AdminPage() {
 
     setSubmittingAdjustment(true)
     try {
-      await apiClient(`/admin/accounts/${selectedAccount.accountNumber}/adjust-balance`, {
-        method: 'POST',
-        body: JSON.stringify({
-          amount: amountNum,
-          action: adjustForm.action
-        })
-      })
+      await apiClient(
+        `/admin/accounts/${selectedAccount.accountNumber}/adjust-balance`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            amount: amountNum,
+            action: adjustForm.action
+          })
+        }
+      )
       alert('Balance adjusted successfully!')
       setShowBalanceModal(false)
       await fetchAdminData()
@@ -194,13 +203,31 @@ export default function AdminPage() {
         <div className={styles.accessDeniedContainer}>
           <div className={styles.accessDeniedCard}>
             <div className={styles.deniedIconWrapper}>
-              <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <svg
+                width="40"
+                height="40"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
             </div>
             <h2>ACCESS DENIED</h2>
-            <p>You do not have the required administrative clearance to view this secure panel. If you believe this is an error, contact the system administrator.</p>
-            <button className={styles.actionBtn} onClick={() => router.push('/dashboard')}>
+            <p>
+              You do not have the required administrative clearance to view this
+              secure panel. If you believe this is an error, contact the system
+              administrator.
+            </p>
+            <button
+              className={styles.actionBtn}
+              onClick={() => router.push('/dashboard')}
+            >
               Return to Dashboard
             </button>
           </div>
@@ -211,7 +238,7 @@ export default function AdminPage() {
 
   // Filtering Lists
   const filteredUsers = users.filter((u) => {
-    const matchesSearch = 
+    const matchesSearch =
       u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -227,15 +254,19 @@ export default function AdminPage() {
   })
 
   const filteredLogs = auditLogs.filter((log) => {
-    const matchesSearch = 
+    const matchesSearch =
       log.event.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      JSON.stringify(log.payload).toLowerCase().includes(searchQuery.toLowerCase())
+      JSON.stringify(log.payload)
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
     const matchesEvent = eventFilter === 'all' || log.event === eventFilter
     return matchesSearch && matchesEvent
   })
 
   // Get unique audit event names for filters
-  const uniqueEventNames = Array.from(new Set(auditLogs.map((log) => log.event)))
+  const uniqueEventNames = Array.from(
+    new Set(auditLogs.map((log) => log.event))
+  )
 
   return (
     <main className={styles.pageContainer}>
@@ -246,8 +277,15 @@ export default function AdminPage() {
         <header className={styles.contentHeader}>
           <div>
             <h1 className={styles.pageTitle}>Admin Control Center</h1>
-            <p style={{ color: '#94a3b8', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-              Real-time platform statistics, user roles, account vaults, and system audit logs.
+            <p
+              style={{
+                color: '#94a3b8',
+                fontSize: '0.9rem',
+                marginTop: '0.25rem'
+              }}
+            >
+              Real-time platform statistics, user roles, account vaults, and
+              system audit logs.
             </p>
           </div>
           <div className={styles.headerActions}>
@@ -256,7 +294,11 @@ export default function AdminPage() {
               LOG OUT
             </button>
             <Link href="/profile">
-              <img src={user?.avatarUrl || '/person-logo.png'} alt="profile" className={styles.avatar} />
+              <img
+                src={user?.avatarUrl || '/person-logo.png'}
+                alt="profile"
+                className={styles.avatar}
+              />
             </Link>
           </div>
         </header>
@@ -265,8 +307,19 @@ export default function AdminPage() {
         <div className={styles.kpiGrid}>
           <div className={styles.kpiCard}>
             <div className={styles.kpiIconWrapper}>
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              <svg
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
               </svg>
             </div>
             <div className={styles.kpiInfo}>
@@ -277,8 +330,19 @@ export default function AdminPage() {
 
           <div className={styles.kpiCard}>
             <div className={styles.kpiIconWrapper}>
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              <svg
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
               </svg>
             </div>
             <div className={styles.kpiInfo}>
@@ -289,28 +353,58 @@ export default function AdminPage() {
 
           <div className={styles.kpiCard}>
             <div className={styles.kpiIconWrapper}>
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              <svg
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                />
               </svg>
             </div>
             <div className={styles.kpiInfo}>
               <h4>Vault Reserves</h4>
               <p className={styles.kpiValue}>
-                Rs. {Number(stats.totalDeposits).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                Rs.{' '}
+                {Number(stats.totalDeposits).toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
               </p>
             </div>
           </div>
 
           <div className={styles.kpiCard}>
             <div className={styles.kpiIconWrapper}>
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              <svg
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
               </svg>
             </div>
             <div className={styles.kpiInfo}>
               <h4>Tx Volume</h4>
               <p className={styles.kpiValue}>
-                Rs. {Number(stats.totalVolume).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                Rs.{' '}
+                {Number(stats.totalVolume).toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
               </p>
             </div>
           </div>
@@ -319,25 +413,37 @@ export default function AdminPage() {
         {/* Navigation Tabs */}
         <div className={styles.tabsContainer}>
           <button
-            onClick={() => { setActiveTab('overview'); setSearchQuery(''); }}
+            onClick={() => {
+              setActiveTab('overview')
+              setSearchQuery('')
+            }}
             className={`${styles.tabButton} ${activeTab === 'overview' ? styles.active : ''}`}
           >
             SYSTEM OVERVIEW
           </button>
           <button
-            onClick={() => { setActiveTab('users'); setSearchQuery(''); }}
+            onClick={() => {
+              setActiveTab('users')
+              setSearchQuery('')
+            }}
             className={`${styles.tabButton} ${activeTab === 'users' ? styles.active : ''}`}
           >
             USER DIRECTORY
           </button>
           <button
-            onClick={() => { setActiveTab('accounts'); setSearchQuery(''); }}
+            onClick={() => {
+              setActiveTab('accounts')
+              setSearchQuery('')
+            }}
             className={`${styles.tabButton} ${activeTab === 'accounts' ? styles.active : ''}`}
           >
             ACCOUNT VAULTS
           </button>
           <button
-            onClick={() => { setActiveTab('logs'); setSearchQuery(''); }}
+            onClick={() => {
+              setActiveTab('logs')
+              setSearchQuery('')
+            }}
             className={`${styles.tabButton} ${activeTab === 'logs' ? styles.active : ''}`}
           >
             SYSTEM AUDIT LOGS
@@ -347,17 +453,47 @@ export default function AdminPage() {
         {/* Tab Contents */}
         {activeTab === 'overview' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr',
+                gap: '2rem'
+              }}
+            >
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: '#d8b4fe' }}>
+                <h3
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 800,
+                    marginBottom: '1rem',
+                    color: '#d8b4fe'
+                  }}
+                >
                   Platform Health & Activity
                 </h3>
-                <p style={{ color: '#94a3b8', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                  Welcome to the Nova Bank Command center. As an administrator, you have capabilities to inspect global bank accounts, override roles, adjust balances, and audit actions. Every update is tracked globally inside the immutable system log below.
+                <p
+                  style={{
+                    color: '#94a3b8',
+                    lineHeight: 1.6,
+                    marginBottom: '1.5rem'
+                  }}
+                >
+                  Welcome to the Nova Bank Command center. As an administrator,
+                  you have capabilities to inspect global bank accounts,
+                  override roles, adjust balances, and audit actions. Every
+                  update is tracked globally inside the immutable system log
+                  below.
                 </p>
 
                 <div className={styles.tableContainer}>
-                  <div style={{ padding: '1.25rem 1.5rem', background: 'rgba(255,255,255,0.02)', fontWeight: 700, color: '#a78bfa' }}>
+                  <div
+                    style={{
+                      padding: '1.25rem 1.5rem',
+                      background: 'rgba(255,255,255,0.02)',
+                      fontWeight: 700,
+                      color: '#a78bfa'
+                    }}
+                  >
                     Quick Activity Logs (Last 5 events)
                   </div>
                   <table className={styles.adminTable}>
@@ -371,16 +507,31 @@ export default function AdminPage() {
                     <tbody>
                       {auditLogs.slice(0, 5).map((log) => (
                         <tr key={log.id}>
-                          <td style={{ fontWeight: 700, color: '#e9d5ff' }}>{log.event}</td>
-                          <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#f472b6' }}>
+                          <td style={{ fontWeight: 700, color: '#e9d5ff' }}>
+                            {log.event}
+                          </td>
+                          <td
+                            style={{
+                              fontFamily: 'monospace',
+                              fontSize: '0.8rem',
+                              color: '#f472b6'
+                            }}
+                          >
                             {JSON.stringify(log.payload)}
                           </td>
-                          <td style={{ color: '#94a3b8' }}>{new Date(log.createdAt).toLocaleString()}</td>
+                          <td style={{ color: '#94a3b8' }}>
+                            {new Date(log.createdAt).toLocaleString()}
+                          </td>
                         </tr>
                       ))}
                       {auditLogs.length === 0 && (
                         <tr>
-                          <td colSpan={3} style={{ textAlign: 'center', color: '#64748b' }}>No events logged yet.</td>
+                          <td
+                            colSpan={3}
+                            style={{ textAlign: 'center', color: '#64748b' }}
+                          >
+                            No events logged yet.
+                          </td>
                         </tr>
                       )}
                     </tbody>
@@ -388,15 +539,54 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', padding: '1.5rem' }}>
-                <h4 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '1rem', color: '#a78bfa' }}>
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  padding: '1.5rem'
+                }}
+              >
+                <h4
+                  style={{
+                    fontSize: '1.05rem',
+                    fontWeight: 800,
+                    marginBottom: '1rem',
+                    color: '#a78bfa'
+                  }}
+                >
                   Admin Actions Quick Reference
                 </h4>
-                <ul style={{ listStyleType: 'disc', paddingLeft: '1.25rem', color: '#94a3b8', fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', lineHeight: '1.5' }}>
-                  <li>Use the <strong>User Directory</strong> tab to promote accounts to administrators or demote them to regular customers.</li>
-                  <li>Use the <strong>Account Vaults</strong> tab to adjust bank balances, adding or deducting funds, or locking vault states.</li>
-                  <li>Use the <strong>System Audit Logs</strong> tab to verify ledger details and audit security activity.</li>
-                  <li>Ensure all actions comply with local financial operations standards.</li>
+                <ul
+                  style={{
+                    listStyleType: 'disc',
+                    paddingLeft: '1.25rem',
+                    color: '#94a3b8',
+                    fontSize: '0.875rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                    lineHeight: '1.5'
+                  }}
+                >
+                  <li>
+                    Use the <strong>User Directory</strong> tab to promote
+                    accounts to administrators or demote them to regular
+                    customers.
+                  </li>
+                  <li>
+                    Use the <strong>Account Vaults</strong> tab to adjust bank
+                    balances, adding or deducting funds, or locking vault
+                    states.
+                  </li>
+                  <li>
+                    Use the <strong>System Audit Logs</strong> tab to verify
+                    ledger details and audit security activity.
+                  </li>
+                  <li>
+                    Ensure all actions comply with local financial operations
+                    standards.
+                  </li>
                 </ul>
               </div>
             </div>
@@ -446,31 +636,54 @@ export default function AdminPage() {
                 <tbody>
                   {filteredUsers.map((u) => (
                     <tr key={u.id}>
-                      <td style={{ color: '#d8b4fe', fontWeight: 'bold' }}>{u.id}</td>
+                      <td style={{ color: '#d8b4fe', fontWeight: 'bold' }}>
+                        {u.id}
+                      </td>
                       <td>@{u.username}</td>
                       <td>{u.fullName}</td>
-                      <td>{u.email || <span style={{ color: '#64748b' }}>n/a</span>}</td>
-                      <td>{u.nic || <span style={{ color: '#64748b' }}>n/a</span>}</td>
                       <td>
-                        <span className={`${styles.roleBadge} ${u.role === 'admin' ? styles.admin : styles.customer}`}>
+                        {u.email || (
+                          <span style={{ color: '#64748b' }}>n/a</span>
+                        )}
+                      </td>
+                      <td>
+                        {u.nic || <span style={{ color: '#64748b' }}>n/a</span>}
+                      </td>
+                      <td>
+                        <span
+                          className={`${styles.roleBadge} ${u.role === 'admin' ? styles.admin : styles.customer}`}
+                        >
                           {u.role}
                         </span>
                       </td>
-                      <td style={{ color: '#94a3b8' }}>{new Date(u.createdAt).toLocaleDateString()}</td>
+                      <td style={{ color: '#94a3b8' }}>
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </td>
                       <td>
                         <button
                           disabled={submittingRole === u.id}
                           onClick={() => handleToggleRole(u.id, u.role)}
                           className={styles.actionBtn}
                         >
-                          {submittingRole === u.id ? 'Updating...' : u.role === 'admin' ? 'Demote' : 'Make Admin'}
+                          {submittingRole === u.id
+                            ? 'Updating...'
+                            : u.role === 'admin'
+                              ? 'Demote'
+                              : 'Make Admin'}
                         </button>
                       </td>
                     </tr>
                   ))}
                   {filteredUsers.length === 0 && (
                     <tr>
-                      <td colSpan={8} style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+                      <td
+                        colSpan={8}
+                        style={{
+                          textAlign: 'center',
+                          color: '#64748b',
+                          padding: '2rem'
+                        }}
+                      >
                         No users match search criteria.
                       </td>
                     </tr>
@@ -511,12 +724,18 @@ export default function AdminPage() {
                 <tbody>
                   {filteredAccounts.map((acc) => (
                     <tr key={acc.id}>
-                      <td style={{ color: '#d8b4fe', fontWeight: 'bold' }}>{acc.id}</td>
+                      <td style={{ color: '#d8b4fe', fontWeight: 'bold' }}>
+                        {acc.id}
+                      </td>
                       <td>{acc.accountNumber}</td>
                       <td>User #{acc.userId}</td>
                       <td>{acc.accountName}</td>
                       <td style={{ fontWeight: 700, color: '#f472b6' }}>
-                        Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        Rs.{' '}
+                        {Number(acc.balance).toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
                       </td>
                       <td>
                         <button
@@ -530,7 +749,14 @@ export default function AdminPage() {
                   ))}
                   {filteredAccounts.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+                      <td
+                        colSpan={6}
+                        style={{
+                          textAlign: 'center',
+                          color: '#64748b',
+                          padding: '2rem'
+                        }}
+                      >
                         No accounts match search criteria.
                       </td>
                     </tr>
@@ -562,7 +788,9 @@ export default function AdminPage() {
                 >
                   <option value="all">All Events</option>
                   {uniqueEventNames.map((evt) => (
-                    <option key={evt} value={evt}>{evt}</option>
+                    <option key={evt} value={evt}>
+                      {evt}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -584,13 +812,30 @@ export default function AdminPage() {
                     return (
                       <React.Fragment key={log.id}>
                         <tr
-                          onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
+                          onClick={() =>
+                            setExpandedLogId(isExpanded ? null : log.id)
+                          }
                           className={styles.expandableRow}
                         >
-                          <td style={{ color: '#d8b4fe', fontWeight: 'bold' }}>{log.id}</td>
-                          <td style={{ fontWeight: 700, color: '#e9d5ff' }}>{log.event}</td>
-                          <td style={{ color: '#94a3b8' }}>{new Date(log.createdAt).toLocaleString()}</td>
-                          <td style={{ color: '#64748b', fontSize: '0.8rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '300px' }}>
+                          <td style={{ color: '#d8b4fe', fontWeight: 'bold' }}>
+                            {log.id}
+                          </td>
+                          <td style={{ fontWeight: 700, color: '#e9d5ff' }}>
+                            {log.event}
+                          </td>
+                          <td style={{ color: '#94a3b8' }}>
+                            {new Date(log.createdAt).toLocaleString()}
+                          </td>
+                          <td
+                            style={{
+                              color: '#64748b',
+                              fontSize: '0.8rem',
+                              whiteSpace: 'nowrap',
+                              textOverflow: 'ellipsis',
+                              overflow: 'hidden',
+                              maxWidth: '300px'
+                            }}
+                          >
                             {JSON.stringify(log.payload)}
                           </td>
                         </tr>
@@ -598,7 +843,13 @@ export default function AdminPage() {
                           <tr className={styles.expandedDetailRow}>
                             <td colSpan={4}>
                               <div style={{ marginTop: '0.5rem' }}>
-                                <span style={{ fontSize: '0.8rem', color: '#a78bfa', fontWeight: 'bold' }}>
+                                <span
+                                  style={{
+                                    fontSize: '0.8rem',
+                                    color: '#a78bfa',
+                                    fontWeight: 'bold'
+                                  }}
+                                >
                                   Full Payload Metadata:
                                 </span>
                                 <pre className={styles.preBox}>
@@ -613,7 +864,14 @@ export default function AdminPage() {
                   })}
                   {filteredLogs.length === 0 && (
                     <tr>
-                      <td colSpan={4} style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>
+                      <td
+                        colSpan={4}
+                        style={{
+                          textAlign: 'center',
+                          color: '#64748b',
+                          padding: '2rem'
+                        }}
+                      >
                         No audit logs found.
                       </td>
                     </tr>
@@ -631,19 +889,52 @@ export default function AdminPage() {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3>Adjust Vault Balance</h3>
-              <button onClick={() => setShowBalanceModal(false)} className={styles.modalCloseBtn}>
+              <button
+                onClick={() => setShowBalanceModal(false)}
+                className={styles.modalCloseBtn}
+              >
                 &times;
               </button>
             </div>
-            
+
             <form onSubmit={handleAdjustBalanceSubmit}>
-              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem', marginBottom: '1.5rem', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>Account Number</p>
-                <p style={{ margin: '0.25rem 0 0.75rem 0', fontWeight: 'bold', color: '#ffffff' }}>{selectedAccount.accountNumber}</p>
-                
-                <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>Current Balance</p>
-                <p style={{ margin: '0.25rem 0 0 0', fontWeight: 'bold', color: '#f472b6', fontSize: '1.1rem' }}>
-                  Rs. {Number(selectedAccount.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  borderRadius: '10px',
+                  padding: '1rem',
+                  marginBottom: '1.5rem',
+                  border: '1px solid rgba(255,255,255,0.06)'
+                }}
+              >
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+                  Account Number
+                </p>
+                <p
+                  style={{
+                    margin: '0.25rem 0 0.75rem 0',
+                    fontWeight: 'bold',
+                    color: '#ffffff'
+                  }}
+                >
+                  {selectedAccount.accountNumber}
+                </p>
+
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>
+                  Current Balance
+                </p>
+                <p
+                  style={{
+                    margin: '0.25rem 0 0 0',
+                    fontWeight: 'bold',
+                    color: '#f472b6',
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  Rs.{' '}
+                  {Number(selectedAccount.balance).toLocaleString('en-US', {
+                    minimumFractionDigits: 2
+                  })}
                 </p>
               </div>
 
@@ -651,7 +942,12 @@ export default function AdminPage() {
                 <label className={styles.formLabel}>Adjustment Action</label>
                 <select
                   value={adjustForm.action}
-                  onChange={(e) => setAdjustForm({ ...adjustForm, action: e.target.value as any })}
+                  onChange={(e) =>
+                    setAdjustForm({
+                      ...adjustForm,
+                      action: e.target.value as any
+                    })
+                  }
                   className={styles.formSelect}
                 >
                   <option value="deposit">Deposit (Add Funds)</option>
@@ -668,7 +964,9 @@ export default function AdminPage() {
                   required
                   placeholder="Enter adjustment amount"
                   value={adjustForm.amount}
-                  onChange={(e) => setAdjustForm({ ...adjustForm, amount: e.target.value })}
+                  onChange={(e) =>
+                    setAdjustForm({ ...adjustForm, amount: e.target.value })
+                  }
                   className={styles.formInput}
                 />
               </div>

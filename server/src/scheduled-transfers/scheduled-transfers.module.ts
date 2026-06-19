@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { ScheduledTransfer } from './entities/scheduled-transfer.entity'
-import { ScheduledTransfersService } from './scheduled-transfers.service'
-import { ScheduledTransfersController } from './scheduled-transfers.controller'
 import { Account } from '../accounts/entities/account.entity'
-import { TransferModule } from '../transfer/transfer.module'
 import { NotificationsModule } from '../notifications/notifications.module'
+import { TransferModule } from '../transfer/transfer.module'
+import { ScheduledTransfer } from './entities/scheduled-transfer.entity'
+import { ScheduledTransfersController } from './scheduled-transfers.controller'
+import { ScheduledTransfersService } from './scheduled-transfers.service'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ScheduledTransfer, Account]),
     TransferModule,
-    NotificationsModule,
+    NotificationsModule
   ],
   controllers: [ScheduledTransfersController],
   providers: [ScheduledTransfersService],
-  exports: [ScheduledTransfersService],
+  exports: [ScheduledTransfersService]
 })
 export class ScheduledTransfersModule {}

@@ -7,15 +7,17 @@ services:
       dockerfile: Dockerfile
     container_name: htn-26-challenge-dev-container
     env_file:
-      - .env.local
+      - server/.env
     environment:
       NODE_ENV: development
-      PORT: "3000"
+      DATABASE_URL: postgresql://postgres:2007@db:5432/Nova?schema=public
     ports:
       - "3000:3000"
+      - "4000:4000"
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/server/node_modules
       - /app/.next
     depends_on:
       db:
@@ -33,12 +35,11 @@ services:
           path: package.json
         - action: rebuild
           path: bun.lock
-
   db:
     image: postgres:17-alpine
     container_name: htn-26-challenge-db
     env_file:
-      - .env.local
+      - server/.env
     ports:
       - "5432:5432"
     volumes:

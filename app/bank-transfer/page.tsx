@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import NotificationCenter from '@/components/notification-center'
 import Sidebar from '@/components/sidebar'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context'
-import NotificationCenter from '@/components/notification-center'
 
 interface Account {
   id: number
@@ -27,14 +27,17 @@ type Errors = Partial<{
 export default function Home() {
   const { user } = useAuth()
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [selectedFromAccount, setSelectedFromAccount] = useState<Account | null>(null)
+  const [selectedFromAccount, setSelectedFromAccount] =
+    useState<Account | null>(null)
   const [amount, setAmount] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
   const [bank, setBank] = useState('')
   const [description, setDescription] = useState('')
   const [errors, setErrors] = useState<Errors>({})
-  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'failure'>('form')
+  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'failure'>(
+    'form'
+  )
   const [confirmation, setConfirmation] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingAccounts, setLoadingAccounts] = useState(true)
@@ -42,7 +45,9 @@ export default function Home() {
   const [savedPayees, setSavedPayees] = useState<any[]>([])
   const [savePayeeChecked, setSavePayeeChecked] = useState(false)
 
-  const [transferType, setTransferType] = useState<'instant' | 'scheduled'>('instant')
+  const [transferType, setTransferType] = useState<'instant' | 'scheduled'>(
+    'instant'
+  )
   const [frequency, setFrequency] = useState('monthly')
 
   // Virtual card options
@@ -59,7 +64,9 @@ export default function Home() {
   const fetchPendingSplits = async () => {
     setLoadingSplits(true)
     try {
-      const res = await apiClient<{ ok: boolean; data: any[] }>('/bill-splits/pending')
+      const res = await apiClient<{ ok: boolean; data: any[] }>(
+        '/bill-splits/pending'
+      )
       if (res.ok && res.data) {
         setPendingSplits(res.data)
       }
@@ -71,9 +78,13 @@ export default function Home() {
   }
 
   const handleDeclineSplit = async (id: number) => {
-    if (!confirm('Are you sure you want to decline this bill split request?')) return
+    if (!confirm('Are you sure you want to decline this bill split request?'))
+      return
     try {
-      const res = await apiClient<{ ok: boolean }>('/bill-splits/' + id + '/decline', { method: 'POST' })
+      const res = await apiClient<{ ok: boolean }>(
+        '/bill-splits/' + id + '/decline',
+        { method: 'POST' }
+      )
       if (res.ok) {
         alert('Split request declined.')
         fetchPendingSplits()
@@ -94,20 +105,29 @@ export default function Home() {
     e.preventDefault()
     if (!splitToApprove) return
     try {
-      const res = await apiClient<{ ok: boolean }>('/bill-splits/' + splitToApprove.id + '/approve', {
-        method: 'POST',
-        body: JSON.stringify({ fromAccount: approveFromAccount }),
-      })
+      const res = await apiClient<{ ok: boolean }>(
+        '/bill-splits/' + splitToApprove.id + '/approve',
+        {
+          method: 'POST',
+          body: JSON.stringify({ fromAccount: approveFromAccount })
+        }
+      )
       if (res.ok) {
         alert('Split request approved and paid!')
         setSplitToApprove(null)
         fetchPendingSplits()
         // Reload accounts to update balances
-        const accRes = await apiClient<{ ok: boolean; data: Account[] }>('/accounts')
+        const accRes = await apiClient<{ ok: boolean; data: Account[] }>(
+          '/accounts'
+        )
         if (accRes.ok && accRes.data) {
           setAccounts(accRes.data)
           if (accRes.data.length > 0) {
-            const currentSelected = accRes.data.find(a => selectedFromAccount && a.accountNumber === selectedFromAccount.accountNumber)
+            const currentSelected = accRes.data.find(
+              (a) =>
+                selectedFromAccount &&
+                a.accountNumber === selectedFromAccount.accountNumber
+            )
             setSelectedFromAccount(currentSelected || accRes.data[0])
           }
         }
@@ -127,7 +147,9 @@ export default function Home() {
   const fetchScheduledTransfers = async () => {
     setLoadingScheduled(true)
     try {
-      const res = await apiClient<{ ok: boolean; data: any[] }>('/scheduled-transfers')
+      const res = await apiClient<{ ok: boolean; data: any[] }>(
+        '/scheduled-transfers'
+      )
       if (res.ok && res.data) {
         setScheduledTransfers(res.data)
       }
@@ -139,11 +161,15 @@ export default function Home() {
   }
 
   const handleCancelScheduled = async (id: number) => {
-    if (!confirm('Are you sure you want to cancel this scheduled payment?')) return
+    if (!confirm('Are you sure you want to cancel this scheduled payment?'))
+      return
     try {
-      const res = await apiClient<{ ok: boolean; message: string }>(`/scheduled-transfers/${id}`, {
-        method: 'DELETE',
-      })
+      const res = await apiClient<{ ok: boolean; message: string }>(
+        `/scheduled-transfers/${id}`,
+        {
+          method: 'DELETE'
+        }
+      )
       if (res.ok) {
         fetchScheduledTransfers()
       }
@@ -159,10 +185,15 @@ export default function Home() {
       try {
         const [accRes, payeesRes, cardsRes] = await Promise.all([
           apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
-          apiClient<{ ok: boolean; data: any[] }>('/payees').catch(() => ({ ok: false, data: [] })),
-          apiClient<{ ok: boolean; data: any[] }>('/virtual-cards').catch(() => ({ ok: false, data: [] })),
+          apiClient<{ ok: boolean; data: any[] }>('/payees').catch(() => ({
+            ok: false,
+            data: []
+          })),
+          apiClient<{ ok: boolean; data: any[] }>('/virtual-cards').catch(
+            () => ({ ok: false, data: [] })
+          )
         ])
-        
+
         if (accRes.ok && accRes.data && accRes.data.length > 0) {
           setAccounts(accRes.data)
           setSelectedFromAccount(accRes.data[0])
@@ -200,10 +231,14 @@ export default function Home() {
       e.amount = 'Amount is required'
     } else if (Number(amount) <= 0 || isNaN(Number(amount))) {
       e.amount = 'Enter a valid positive amount'
-    } else if (!useCard && selectedFromAccount && Number(amount) > Number(selectedFromAccount.balance)) {
+    } else if (
+      !useCard &&
+      selectedFromAccount &&
+      Number(amount) > Number(selectedFromAccount.balance)
+    ) {
       e.amount = 'Amount exceeds available balance'
     } else if (useCard && selectedCard) {
-      const linkedAcc = accounts.find(a => a.id === selectedCard.accountId)
+      const linkedAcc = accounts.find((a) => a.id === selectedCard.accountId)
       if (linkedAcc && Number(amount) > Number(linkedAcc.balance)) {
         e.amount = 'Amount exceeds linked account balance'
       }
@@ -247,7 +282,7 @@ export default function Home() {
         const payload: any = {
           toAccount: accountNumber,
           amount: Number(amount),
-          description,
+          description
         }
         if (useCard) {
           payload.cardId = selectedCard.id
@@ -255,31 +290,47 @@ export default function Home() {
           payload.fromAccount = selectedFromAccount?.accountNumber
         }
 
-        res = await apiClient<{ ok: boolean; message: string; transaction: any }>('/transfer', {
+        res = await apiClient<{
+          ok: boolean
+          message: string
+          transaction: any
+        }>('/transfer', {
           method: 'POST',
-          body: JSON.stringify(payload),
+          body: JSON.stringify(payload)
         })
       } else {
-        res = await apiClient<{ ok: boolean; message: string; data: any }>('/scheduled-transfers', {
-          method: 'POST',
-          body: JSON.stringify({
-            fromAccount: selectedFromAccount?.accountNumber,
-            toAccount: accountNumber,
-            amount: Number(amount),
-            description: description || 'Scheduled Payment',
-            frequency,
-            startDate: new Date(startDate + 'T12:00:00Z').toISOString(),
-          }),
-        })
+        res = await apiClient<{ ok: boolean; message: string; data: any }>(
+          '/scheduled-transfers',
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              fromAccount: selectedFromAccount?.accountNumber,
+              toAccount: accountNumber,
+              amount: Number(amount),
+              description: description || 'Scheduled Payment',
+              frequency,
+              startDate: new Date(startDate + 'T12:00:00Z').toISOString()
+            })
+          }
+        )
       }
       if (res.ok) {
         if (transferType === 'instant') {
-          setConfirmation(String(res.transaction?.id || Math.floor(10000000 + Math.random() * 89999999)))
+          setConfirmation(
+            String(
+              res.transaction?.id ||
+                Math.floor(10000000 + Math.random() * 89999999)
+            )
+          )
         } else {
-          setConfirmation(String(res.data?.id || Math.floor(10000000 + Math.random() * 89999999)))
+          setConfirmation(
+            String(
+              res.data?.id || Math.floor(10000000 + Math.random() * 89999999)
+            )
+          )
           fetchScheduledTransfers()
         }
-        
+
         // Save payee if requested
         if (savePayeeChecked) {
           await apiClient('/payees', {
@@ -287,8 +338,8 @@ export default function Home() {
             body: JSON.stringify({
               name: accountName,
               accountNumber: accountNumber,
-              bank: bank,
-            }),
+              bank: bank
+            })
           }).catch((payeeErr) => {
             console.error('Failed to auto-save payee:', payeeErr)
           })
@@ -297,7 +348,9 @@ export default function Home() {
         setStep('success')
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Transaction failed. Please check balance or details.')
+      setErrorMsg(
+        err?.message || 'Transaction failed. Please check balance or details.'
+      )
       setStep('failure')
     } finally {
       setLoading(false)
@@ -317,7 +370,10 @@ export default function Home() {
                 <img src="/search.png" alt="search" />
               </button>
               <NotificationCenter />
-              <Link href="/profile" className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 block">
+              <Link
+                href="/profile"
+                className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 block"
+              >
                 <img
                   src={user?.avatarUrl || '/person-logo.png'}
                   alt="avatar"
@@ -332,8 +388,10 @@ export default function Home() {
               {step === 'form' ? (
                 <form onSubmit={handleNext} className="transfer-card p-8 !my-0">
                   <div className="grid grid-cols-12 gap-y-6 gap-x-8 items-center">
-                     {/* Payment Type */}
-                    <label className="col-span-3 text-gray-700 font-semibold">Payment Type :</label>
+                    {/* Payment Type */}
+                    <label className="col-span-3 text-gray-700 font-semibold">
+                      Payment Type :
+                    </label>
                     <div className="col-span-9 flex gap-3">
                       <button
                         type="button"
@@ -374,7 +432,10 @@ export default function Home() {
                             onChange={(e) => setUseCard(e.target.checked)}
                             className="w-4 h-4 accent-[#9a5c97]"
                           />
-                          <label htmlFor="pay-using-card-checkbox" className="text-sm text-gray-600 font-semibold cursor-pointer select-none">
+                          <label
+                            htmlFor="pay-using-card-checkbox"
+                            className="text-sm text-gray-600 font-semibold cursor-pointer select-none"
+                          >
                             Pay using Virtual Card
                           </label>
                         </div>
@@ -390,44 +451,64 @@ export default function Home() {
                         <select
                           value={selectedCard?.id || ''}
                           onChange={(e) => {
-                            const selected = cards.find(c => c.id === Number(e.target.value))
+                            const selected = cards.find(
+                              (c) => c.id === Number(e.target.value)
+                            )
                             setSelectedCard(selected || null)
                           }}
                           className="underline-input bg-transparent"
                         >
-                          {cards.map(c => {
-                            const linkedAcc = accounts.find(a => a.id === c.accountId)
-                            const balanceStr = linkedAcc ? ` - Balance: Rs. ${Number(linkedAcc.balance).toLocaleString()}` : ''
+                          {cards.map((c) => {
+                            const linkedAcc = accounts.find(
+                              (a) => a.id === c.accountId
+                            )
+                            const balanceStr = linkedAcc
+                              ? ` - Balance: Rs. ${Number(linkedAcc.balance).toLocaleString()}`
+                              : ''
                             const limitStr = `(Limit: Rs. ${Number(c.dailyLimit).toLocaleString()})`
                             const isFrozenStr = c.isFrozen ? ' [FROZEN]' : ''
                             return (
-                              <option key={c.id} value={c.id} disabled={c.isFrozen}>
-                                {c.cardType.toUpperCase()} *{c.cardNumber.slice(-4)}{isFrozenStr} {limitStr}{balanceStr}
+                              <option
+                                key={c.id}
+                                value={c.id}
+                                disabled={c.isFrozen}
+                              >
+                                {c.cardType.toUpperCase()} *
+                                {c.cardNumber.slice(-4)}
+                                {isFrozenStr} {limitStr}
+                                {balanceStr}
                               </option>
                             )
                           })}
                         </select>
+                      ) : loadingAccounts ? (
+                        <div className="text-sm text-gray-500">
+                          Loading accounts...
+                        </div>
+                      ) : accounts.length > 0 ? (
+                        <select
+                          value={selectedFromAccount?.accountNumber || ''}
+                          onChange={(e) => {
+                            const selected = accounts.find(
+                              (acc) => acc.accountNumber === e.target.value
+                            )
+                            setSelectedFromAccount(selected || null)
+                          }}
+                          className="underline-input bg-transparent"
+                        >
+                          {accounts.map((acc) => (
+                            <option key={acc.id} value={acc.accountNumber}>
+                              {acc.accountName} ({acc.accountNumber}) - Rs.{' '}
+                              {Number(acc.balance).toLocaleString('en-US', {
+                                minimumFractionDigits: 2
+                              })}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
-                        loadingAccounts ? (
-                          <div className="text-sm text-gray-500">Loading accounts...</div>
-                        ) : accounts.length > 0 ? (
-                          <select
-                            value={selectedFromAccount?.accountNumber || ''}
-                            onChange={(e) => {
-                              const selected = accounts.find(acc => acc.accountNumber === e.target.value)
-                              setSelectedFromAccount(selected || null)
-                            }}
-                            className="underline-input bg-transparent"
-                          >
-                            {accounts.map(acc => (
-                              <option key={acc.id} value={acc.accountNumber}>
-                                {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <div className="text-sm text-red-600">No bank accounts available.</div>
-                        )
+                        <div className="text-sm text-red-600">
+                          No bank accounts available.
+                        </div>
                       )}
                       {errors.fromAccount && (
                         <div className="text-sm text-red-600 mt-1">
@@ -456,13 +537,17 @@ export default function Home() {
                     {/* Saved Payees Selection */}
                     {savedPayees.length > 0 && (
                       <>
-                        <label className="col-span-3 text-gray-700">Saved Payees :</label>
+                        <label className="col-span-3 text-gray-700">
+                          Saved Payees :
+                        </label>
                         <div className="col-span-9">
                           <select
                             onChange={(e) => {
                               const val = e.target.value
                               if (val) {
-                                const p = savedPayees.find(payee => payee.id === Number(val))
+                                const p = savedPayees.find(
+                                  (payee) => payee.id === Number(val)
+                                )
                                 if (p) {
                                   setAccountNumber(p.accountNumber)
                                   setAccountName(p.name)
@@ -472,8 +557,10 @@ export default function Home() {
                             }}
                             className="underline-input bg-transparent"
                           >
-                            <option value="">-- Choose a saved payee to auto-fill --</option>
-                            {savedPayees.map(p => (
+                            <option value="">
+                              -- Choose a saved payee to auto-fill --
+                            </option>
+                            {savedPayees.map((p) => (
                               <option key={p.id} value={p.id}>
                                 {p.name} ({p.bank} - {p.accountNumber})
                               </option>
@@ -545,7 +632,9 @@ export default function Home() {
                     {/* Conditional Scheduling Fields */}
                     {transferType === 'scheduled' && (
                       <>
-                        <label className="col-span-3 text-gray-700 font-semibold">Frequency :</label>
+                        <label className="col-span-3 text-gray-700 font-semibold">
+                          Frequency :
+                        </label>
                         <div className="col-span-9">
                           <select
                             value={frequency}
@@ -558,7 +647,9 @@ export default function Home() {
                           </select>
                         </div>
 
-                        <label className="col-span-3 text-gray-700 font-semibold">Start Date :</label>
+                        <label className="col-span-3 text-gray-700 font-semibold">
+                          Start Date :
+                        </label>
                         <div className="col-span-9">
                           <input
                             type="date"
@@ -599,7 +690,10 @@ export default function Home() {
                         onChange={(e) => setSavePayeeChecked(e.target.checked)}
                         className="w-4 h-4 accent-[#9a5c97]"
                       />
-                      <label htmlFor="save-payee-checkbox" className="text-sm text-gray-600 font-semibold cursor-pointer select-none">
+                      <label
+                        htmlFor="save-payee-checkbox"
+                        className="text-sm text-gray-600 font-semibold cursor-pointer select-none"
+                      >
                         Save this payee for future transfers
                       </label>
                     </div>
@@ -618,17 +712,39 @@ export default function Home() {
                   </h3>
                   <div className="bg-white rounded-lg p-6 shadow-lg max-w-xl mx-auto text-center">
                     <p className="mb-4">
-                      Confirm your {transferType === 'scheduled' ? `${frequency} scheduled` : ''} transfer of <strong>Rs. {Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>{' '}
-                      to <strong>{accountName || 'recipient'}</strong> ({accountNumber})
+                      Confirm your{' '}
+                      {transferType === 'scheduled'
+                        ? `${frequency} scheduled`
+                        : ''}{' '}
+                      transfer of{' '}
+                      <strong>
+                        Rs.{' '}
+                        {Number(amount).toLocaleString('en-US', {
+                          minimumFractionDigits: 2
+                        })}
+                      </strong>{' '}
+                      to <strong>{accountName || 'recipient'}</strong> (
+                      {accountNumber})
                     </p>
                     {useCard && selectedCard && (
                       <p className="text-sm text-purple-800 font-bold mb-4 bg-purple-55 p-3 rounded-lg border border-purple-200 inline-block">
-                        💳 Paying via Virtual Card: {selectedCard.cardType.toUpperCase()} *{selectedCard.cardNumber.slice(-4)}
+                        💳 Paying via Virtual Card:{' '}
+                        {selectedCard.cardType.toUpperCase()} *
+                        {selectedCard.cardNumber.slice(-4)}
                       </p>
                     )}
                     {transferType === 'scheduled' ? (
                       <p className="text-sm text-gray-600 mb-6">
-                        Starting on: <strong>{new Date(startDate + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>
+                        Starting on:{' '}
+                        <strong>
+                          {new Date(
+                            startDate + 'T12:00:00Z'
+                          ).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </strong>
                       </p>
                     ) : (
                       <p className="text-sm text-gray-600 mb-6">
@@ -656,7 +772,11 @@ export default function Home() {
                         disabled={loading}
                         className="next-btn transfer-btn !mt-0"
                       >
-                        {loading ? 'PROCESSING...' : (transferType === 'scheduled' ? 'SCHEDULE' : 'TRANSFER')}
+                        {loading
+                          ? 'PROCESSING...'
+                          : transferType === 'scheduled'
+                            ? 'SCHEDULE'
+                            : 'TRANSFER'}
                       </button>
                     </div>
                   </div>
@@ -691,10 +811,15 @@ export default function Home() {
                     </div>
 
                     <h3 className="text-center text-2xl font-semibold mb-4">
-                      {transferType === 'scheduled' ? 'Scheduled Setup Successful!' : 'Transfer Successful!'}
+                      {transferType === 'scheduled'
+                        ? 'Scheduled Setup Successful!'
+                        : 'Transfer Successful!'}
                     </h3>
                     <p className="text-center text-sm text-gray-500 mb-10">
-                      {transferType === 'scheduled' ? 'Scheduled Reference Number' : 'Confirmation Number'} : {confirmation}
+                      {transferType === 'scheduled'
+                        ? 'Scheduled Reference Number'
+                        : 'Confirmation Number'}{' '}
+                      : {confirmation}
                     </p>
 
                     <div className="flex justify-center">
@@ -708,12 +833,21 @@ export default function Home() {
                           setErrors({})
                           setConfirmation(null)
                           setStep('form')
-                           // Reload accounts to get new balances
-                          apiClient<{ ok: boolean; data: Account[] }>('/accounts').then(res => {
+                          // Reload accounts to get new balances
+                          apiClient<{ ok: boolean; data: Account[] }>(
+                            '/accounts'
+                          ).then((res) => {
                             if (res.ok && res.data) {
                               setAccounts(res.data)
-                              const currentSelected = res.data.find(a => selectedFromAccount && a.accountNumber === selectedFromAccount.accountNumber)
-                              setSelectedFromAccount(currentSelected || res.data[0])
+                              const currentSelected = res.data.find(
+                                (a) =>
+                                  selectedFromAccount &&
+                                  a.accountNumber ===
+                                    selectedFromAccount.accountNumber
+                              )
+                              setSelectedFromAccount(
+                                currentSelected || res.data[0]
+                              )
                             }
                           })
                           fetchPendingSplits()
@@ -778,17 +912,18 @@ export default function Home() {
                 </div>
               )}
             </div>
-                        {/* Right side: Scheduled Transfers list & Pending Splits */}
+            {/* Right side: Scheduled Transfers list & Pending Splits */}
             <div className="col-span-12 lg:col-span-5 flex flex-col gap-6">
-              
               {/* Pending Split Requests */}
               <div className="bg-white rounded-[18px] shadow-[0_22px_50px_rgba(0,0,0,0.12)] border border-[rgba(0,0,0,0.04)] p-6">
                 <h3 className="text-xl font-bold mb-4 text-[#450043] flex items-center gap-2 border-b border-gray-100 pb-3">
                   <span className="text-2xl">👥</span> Pending Splits
                 </h3>
-                
+
                 {loadingSplits ? (
-                  <div className="text-sm text-gray-500 py-4 text-center">Loading split requests...</div>
+                  <div className="text-sm text-gray-500 py-4 text-center">
+                    Loading split requests...
+                  </div>
                 ) : pendingSplits.length > 0 ? (
                   <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
                     {pendingSplits.map((item) => (
@@ -798,18 +933,28 @@ export default function Home() {
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2">
-                            <span className="font-bold text-gray-900 text-[11px] truncate" style={{ maxWidth: '65%' }}>
+                            <span
+                              className="font-bold text-gray-900 text-[11px] truncate"
+                              style={{ maxWidth: '65%' }}
+                            >
                               From: {item.requesterFullName}
                             </span>
                             <span className="font-extrabold text-[#450043] text-xs shrink-0">
-                              Rs. {Number(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              Rs.{' '}
+                              {Number(item.amount).toLocaleString('en-US', {
+                                minimumFractionDigits: 2
+                              })}
                             </span>
                           </div>
                           <p className="text-xs text-gray-600 mt-2 bg-white/70 p-2 rounded-lg border border-gray-100">
                             "{item.description}"
                           </p>
                           <p className="text-[9px] text-gray-400 mt-2">
-                            Requested on: {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            Requested on:{' '}
+                            {new Date(item.createdAt).toLocaleDateString(
+                              'en-US',
+                              { month: 'short', day: 'numeric' }
+                            )}
                           </p>
                         </div>
                         <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100/50">
@@ -841,9 +986,11 @@ export default function Home() {
                 <h3 className="text-xl font-bold mb-6 text-[#450043] flex items-center gap-2 border-b border-gray-100 pb-3">
                   <span className="text-2xl">📅</span> Scheduled Payments
                 </h3>
-                
+
                 {loadingScheduled ? (
-                  <div className="text-sm text-gray-500 py-4 text-center">Loading payments...</div>
+                  <div className="text-sm text-gray-500 py-4 text-center">
+                    Loading payments...
+                  </div>
                 ) : scheduledTransfers.length > 0 ? (
                   <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
                     {scheduledTransfers.map((item) => (
@@ -857,20 +1004,31 @@ export default function Home() {
                               {item.frequency}
                             </span>
                             <span className="font-bold text-gray-900 text-sm">
-                              Rs. {Number(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              Rs.{' '}
+                              {Number(item.amount).toLocaleString('en-US', {
+                                minimumFractionDigits: 2
+                              })}
                             </span>
                           </div>
                           <h4 className="font-semibold text-gray-900 text-sm">
                             {item.description || 'Recurring Transfer'}
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
-                            From: {item.fromAccount} <br/>
+                            From: {item.fromAccount} <br />
                             To: {item.toAccount}
                           </p>
                         </div>
                         <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100/50">
                           <p className="text-[10px] text-gray-400">
-                            Next: {new Date(item.nextRun).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            Next:{' '}
+                            {new Date(item.nextRun).toLocaleDateString(
+                              'en-US',
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              }
+                            )}
                           </p>
                           <button
                             onClick={() => handleCancelScheduled(item.id)}
@@ -896,29 +1054,54 @@ export default function Home() {
 
       {/* Split Approval Popup */}
       {splitToApprove && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[9999]" onClick={() => setSplitToApprove(null)}>
-          <div className="bg-white rounded-2xl w-[400px] max-w-[90%] p-6 text-gray-800 shadow-2xl flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-[#450043] border-b pb-2">Approve Split Request</h3>
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[9999]"
+          onClick={() => setSplitToApprove(null)}
+        >
+          <div
+            className="bg-white rounded-2xl w-[400px] max-w-[90%] p-6 text-gray-800 shadow-2xl flex flex-col gap-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-[#450043] border-b pb-2">
+              Approve Split Request
+            </h3>
             <div>
-              <p className="text-sm text-gray-600">You are paying <strong>{splitToApprove.requesterFullName}</strong></p>
-              <p className="text-sm text-gray-600">Amount: <strong className="text-green-600">Rs. {Number(splitToApprove.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></p>
+              <p className="text-sm text-gray-600">
+                You are paying{' '}
+                <strong>{splitToApprove.requesterFullName}</strong>
+              </p>
+              <p className="text-sm text-gray-600">
+                Amount:{' '}
+                <strong className="text-green-600">
+                  Rs.{' '}
+                  {Number(splitToApprove.amount).toLocaleString('en-US', {
+                    minimumFractionDigits: 2
+                  })}
+                </strong>
+              </p>
               <p className="text-sm text-gray-550 italic mt-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                 "{splitToApprove.description}"
               </p>
             </div>
 
-            <form onSubmit={handleConfirmApproveSplit} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleConfirmApproveSplit}
+              className="flex flex-col gap-4"
+            >
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500">Pay from Account</label>
+                <label className="text-xs font-semibold text-gray-500">
+                  Pay from Account
+                </label>
                 <select
                   value={approveFromAccount}
                   onChange={(e) => setApproveFromAccount(e.target.value)}
                   className="w-full border rounded-lg p-2 bg-transparent text-sm focus:border-[#9a5c97] outline-none"
                   required
                 >
-                  {accounts.map(acc => (
+                  {accounts.map((acc) => (
                     <option key={acc.id} value={acc.accountNumber}>
-                      {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString()}
+                      {acc.accountName} ({acc.accountNumber}) - Rs.{' '}
+                      {Number(acc.balance).toLocaleString()}
                     </option>
                   ))}
                 </select>

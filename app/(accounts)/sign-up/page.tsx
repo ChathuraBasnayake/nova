@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
 import Link from 'next/link'
+import React, { useState } from 'react'
 import AuthButton from '@/components/authButton'
 import { useAuth } from '@/lib/auth-context'
 
@@ -21,7 +21,13 @@ export default function SignUpPage() {
     setError('')
     setSuccess('')
 
-    if (!accountNumber.trim() || !accountName.trim() || !email.trim() || !password || !confirmPassword) {
+    if (
+      !accountNumber.trim() ||
+      !accountName.trim() ||
+      !email.trim() ||
+      !password ||
+      !confirmPassword
+    ) {
       setError('All fields are required.')
       return
     }
@@ -42,7 +48,7 @@ export default function SignUpPage() {
         username: accountNumber.trim(),
         fullName: accountName.trim(),
         email: email.trim(),
-        password,
+        password
       })
       setSuccess('Account created successfully! Redirecting to login...')
     } catch (err: any) {
@@ -54,7 +60,10 @@ export default function SignUpPage() {
 
   return (
     <section className="mx-auto min-h-[700px] w-full max-w-[1100px] rounded-[58px] bg-white px-8 py-9 shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] lg:min-h-[820px] lg:px-14">
-      <form onSubmit={handleSubmit} className="relative mx-auto w-full max-w-[860px]">
+      <form
+        onSubmit={handleSubmit}
+        className="relative mx-auto w-full max-w-[860px]"
+      >
         <img
           src="/loginlogo.png"
           alt="Nova Bank"
@@ -80,7 +89,10 @@ export default function SignUpPage() {
         <div className="space-y-4">
           {/* Account Number */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl text-black" htmlFor="signup-account-number">
+            <label
+              className="text-xl text-black"
+              htmlFor="signup-account-number"
+            >
               Account Number :
             </label>
             <input
@@ -136,7 +148,10 @@ export default function SignUpPage() {
 
           {/* Confirm Password */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl text-black" htmlFor="signup-confirm-password">
+            <label
+              className="text-xl text-black"
+              htmlFor="signup-confirm-password"
+            >
               Confirm Password :
             </label>
             <input
@@ -153,7 +168,10 @@ export default function SignUpPage() {
           <AuthButton type="submit" disabled={loading}>
             {loading ? 'SAVING...' : 'SIGN UP'}
           </AuthButton>
-          <Link href="/login" className="text-sm font-bold text-black hover:underline">
+          <Link
+            href="/login"
+            className="text-sm font-bold text-black hover:underline"
+          >
             Already have an account? Sign In
           </Link>
         </div>

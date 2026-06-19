@@ -1,22 +1,21 @@
 import {
-  Injectable,
-  ForbiddenException,
   BadRequestException,
-  NotFoundException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { DataSource, Repository, In, Between } from 'typeorm'
+import { Between, DataSource, In, Repository } from 'typeorm'
 import { Account } from '../accounts/entities/account.entity'
-import { Budget } from '../budgets/entities/budget.entity'
-import { Transaction } from '../transactions/entities/transaction.entity'
 import { AuditLog } from '../admin/entities/audit-log.entity'
-import { TransferDto } from './dto/transfer.dto'
-import { NotificationsService } from '../notifications/notifications.service'
-import { User } from '../users/entities/user.entity'
+import { Budget } from '../budgets/entities/budget.entity'
 import { MailService } from '../mail/mail.service'
-import { VirtualCardsService } from '../virtual-cards/virtual-cards.service'
+import { NotificationsService } from '../notifications/notifications.service'
 import { SavingsJarsService } from '../savings-jars/savings-jars.service'
-
+import { Transaction } from '../transactions/entities/transaction.entity'
+import { User } from '../users/entities/user.entity'
+import { VirtualCardsService } from '../virtual-cards/virtual-cards.service'
+import { TransferDto } from './dto/transfer.dto'
 
 @Injectable()
 export class TransferService {
@@ -31,7 +30,7 @@ export class TransferService {
     private mailService: MailService,
     private dataSource: DataSource,
     private readonly virtualCardsService: VirtualCardsService,
-    private readonly savingsJarsService: SavingsJarsService,
+    private readonly savingsJarsService: SavingsJarsService
   ) {}
 
   async execute(dto: TransferDto, userId: number) {
@@ -42,15 +41,22 @@ export class TransferService {
         cardNumber = card.cardNumber
       }
       if (!cardNumber) {
-        throw new BadRequestException('Card number is required when paying with card.')
+        throw new BadRequestException(
+          'Card number is required when paying with card.'
+        )
       }
 
-      const cardAccount = await this.virtualCardsService.validateCardUsage(cardNumber, dto.amount)
+      const cardAccount = await this.virtualCardsService.validateCardUsage(
+        cardNumber,
+        dto.amount
+      )
       dto.fromAccount = cardAccount.accountNumber
 
       const cardLast4 = cardNumber.slice(-4)
       const cardSuffix = `(Card: ${cardLast4})`
-      dto.description = dto.description ? `${dto.description} ${cardSuffix}` : cardSuffix
+      dto.description = dto.description
+        ? `${dto.description} ${cardSuffix}`
+        : cardSuffix
     }
 
     if (!dto.fromAccount) {
@@ -63,15 +69,17 @@ export class TransferService {
 
     // Verify ownership
     const sourceAccount = await this.accountsRepository.findOne({
-      where: { accountNumber: dto.fromAccount, userId },
+      where: { accountNumber: dto.fromAccount, userId }
     })
     if (!sourceAccount) {
-      throw new ForbiddenException('Source account not found or does not belong to you.')
+      throw new ForbiddenException(
+        'Source account not found or does not belong to you.'
+      )
     }
 
     // Verify destination exists
     const destAccount = await this.accountsRepository.findOne({
-      where: { accountNumber: dto.toAccount },
+      where: { accountNumber: dto.toAccount }
     })
     if (!destAccount) {
       throw new NotFoundException('Destination account not found.')
@@ -108,7 +116,7 @@ export class TransferService {
         `UPDATE accounts SET balance = balance - $1
          WHERE account_number = $2 AND user_id = $3 AND balance >= $1
          RETURNING balance`,
-        [dto.amount, dto.fromAccount, userId],
+        [dto.amount, dto.fromAccount, userId]
       )
 
       if (!debitResult || debitResult.length === 0) {
@@ -122,13 +130,13 @@ export class TransferService {
           // Debit round-up
           await queryRunner.query(
             `UPDATE accounts SET balance = balance - $1 WHERE account_number = $2 AND user_id = $3`,
-            [roundUpAmount, dto.fromAccount, userId],
+            [roundUpAmount, dto.fromAccount, userId]
           )
 
           // Credit savings jar
           await queryRunner.query(
             `UPDATE savings_jars SET current_amount = current_amount + $1 WHERE id = $2 AND user_id = $3`,
-            [roundUpAmount, roundUpJar.id, userId],
+            [roundUpAmount, roundUpJar.id, userId]
           )
 
           // Record transaction
@@ -141,8 +149,8 @@ export class TransferService {
               roundUpAmount,
               `Spare Change Round-up (${roundUpJar.name})`,
               'Savings',
-              userId,
-            ],
+              userId
+            ]
           )
 
           roundUpExecuted = true
@@ -152,7 +160,7 @@ export class TransferService {
       // Credit destination
       await queryRunner.query(
         `UPDATE accounts SET balance = balance + $1 WHERE account_number = $2`,
-        [dto.amount, dto.toAccount],
+        [dto.amount, dto.toAccount]
       )
 
       // Record transaction
@@ -161,7 +169,14 @@ export class TransferService {
         `INSERT INTO transactions (from_account, to_account, amount, description, category, created_by)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, from_account, to_account, amount, description, status, category, created_at`,
-        [dto.fromAccount, dto.toAccount, dto.amount, dto.description || '', category, userId],
+        [
+          dto.fromAccount,
+          dto.toAccount,
+          dto.amount,
+          dto.description || '',
+          category,
+          userId
+        ]
       )
 
       // Audit log
@@ -175,9 +190,12 @@ export class TransferService {
             amount: dto.amount,
             userId,
             transactionId: txRecord.id,
-            roundUp: (roundUpExecuted && roundUpJar) ? { jarId: roundUpJar.id, amount: roundUpAmount } : null,
-          }),
-        ],
+            roundUp:
+              roundUpExecuted && roundUpJar
+                ? { jarId: roundUpJar.id, amount: roundUpAmount }
+                : null
+          })
+        ]
       )
 
       await queryRunner.commitTransaction()
@@ -188,7 +206,7 @@ export class TransferService {
           userId,
           'TRANSFER',
           'Transfer Successful',
-          `Sent Rs. ${Number(dto.amount).toLocaleString('en-US')} to account ${dto.toAccount}.`,
+          `Sent Rs. ${Number(dto.amount).toLocaleString('en-US')} to account ${dto.toAccount}.`
         )
 
         // Send round-up notifications
@@ -198,14 +216,14 @@ export class TransferService {
               userId,
               'TRANSFER',
               'Spare Change Swept',
-              `Spare change of Rs. ${roundUpAmount.toLocaleString('en-US')} swept into your "${roundUpJar.name}" jar.`,
+              `Spare change of Rs. ${roundUpAmount.toLocaleString('en-US')} swept into your "${roundUpJar.name}" jar.`
             )
           } else {
             await this.notificationsService.create(
               userId,
               'TRANSFER',
               'Round-Up Skipped',
-              `Spare change round-up of Rs. ${roundUpAmount.toLocaleString('en-US')} for "${roundUpJar.name}" was skipped due to insufficient balance.`,
+              `Spare change round-up of Rs. ${roundUpAmount.toLocaleString('en-US')} for "${roundUpJar.name}" was skipped due to insufficient balance.`
             )
           }
         }
@@ -221,7 +239,7 @@ export class TransferService {
               dto.fromAccount,
               dto.toAccount,
               Number(dto.amount),
-              String(txRecord.id),
+              String(txRecord.id)
             )
           }
         } catch (mailErr) {
@@ -234,31 +252,33 @@ export class TransferService {
             destAccount.userId,
             'TRANSFER',
             'Funds Received',
-            `Received Rs. ${Number(dto.amount).toLocaleString('en-US')} from account ${dto.fromAccount}.`,
+            `Received Rs. ${Number(dto.amount).toLocaleString('en-US')} from account ${dto.fromAccount}.`
           )
         }
 
         // 3. Check for Budget Alerts (Phase 2 & 4 integration)
         const budgetRepo = this.dataSource.getRepository(Budget)
         const budget = await budgetRepo.findOne({
-          where: { userId, category },
+          where: { userId, category }
         })
 
         if (budget) {
           const startOfMonth = new Date()
           startOfMonth.setDate(1)
           startOfMonth.setHours(0, 0, 0, 0)
-          
-          const accounts = await this.accountsRepository.find({ where: { userId } })
-          const accountNums = accounts.map(a => a.accountNumber)
+
+          const accounts = await this.accountsRepository.find({
+            where: { userId }
+          })
+          const accountNums = accounts.map((a) => a.accountNumber)
 
           const txsInMonth = await this.transactionsRepository.find({
             where: {
               fromAccount: In(accountNums),
               category,
-              createdAt: Between(startOfMonth, new Date()),
+              createdAt: Between(startOfMonth, new Date())
             },
-            select: ['amount'],
+            select: ['amount']
           })
 
           const spent = txsInMonth.reduce((acc, t) => acc + Number(t.amount), 0)
@@ -268,7 +288,7 @@ export class TransferService {
               userId,
               'BUDGET_EXCEEDED',
               'Budget Exceeded',
-              `Alert: Your monthly spending on "${category}" has reached Rs. ${spent.toLocaleString('en-US')}, exceeding your limit of Rs. ${Number(budget.monthlyLimit).toLocaleString('en-US')}.`,
+              `Alert: Your monthly spending on "${category}" has reached Rs. ${spent.toLocaleString('en-US')}, exceeding your limit of Rs. ${Number(budget.monthlyLimit).toLocaleString('en-US')}.`
             )
           }
         }
@@ -280,7 +300,7 @@ export class TransferService {
       return {
         ok: true,
         message: 'Transfer completed successfully.',
-        transaction: txRecord,
+        transaction: txRecord
       }
     } catch (error) {
       await queryRunner.rollbackTransaction()
@@ -292,19 +312,39 @@ export class TransferService {
 
   private parseCategory(description: string): string {
     const desc = (description || '').toLowerCase()
-    if (/bill|utility|power|electric|water|internet|phone|telecom|insurance|tax|gas|ceb|leco|slt|mobitel|dialog|hutch/.test(desc)) {
+    if (
+      /bill|utility|power|electric|water|internet|phone|telecom|insurance|tax|gas|ceb|leco|slt|mobitel|dialog|hutch/.test(
+        desc
+      )
+    ) {
       return 'Bills'
     }
-    if (/food|grocery|groceries|restaurant|cafe|eat|lunch|dinner|breakfast|uber eats|pizza|kfc|mcdonald|keells|cargills|supermarket/.test(desc)) {
+    if (
+      /food|grocery|groceries|restaurant|cafe|eat|lunch|dinner|breakfast|uber eats|pizza|kfc|mcdonald|keells|cargills|supermarket/.test(
+        desc
+      )
+    ) {
       return 'Food'
     }
-    if (/transport|travel|ride|uber|pickme|taxi|bus|train|fuel|petrol|diesel|flight|air/.test(desc)) {
+    if (
+      /transport|travel|ride|uber|pickme|taxi|bus|train|fuel|petrol|diesel|flight|air/.test(
+        desc
+      )
+    ) {
       return 'Transport'
     }
-    if (/shopping|store|super|shop|amazon|daraz|ebay|clothing|clothes|shoes|gifts|mall/.test(desc)) {
+    if (
+      /shopping|store|super|shop|amazon|daraz|ebay|clothing|clothes|shoes|gifts|mall/.test(
+        desc
+      )
+    ) {
       return 'Shopping'
     }
-    if (/netflix|spotify|cinema|movie|tickets|games|gaming|concert|gym|sports|ent|fun/.test(desc)) {
+    if (
+      /netflix|spotify|cinema|movie|tickets|games|gaming|concert|gym|sports|ent|fun/.test(
+        desc
+      )
+    ) {
       return 'Entertainment'
     }
     return 'Others'

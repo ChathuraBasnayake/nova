@@ -1,15 +1,15 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Injectable,
+  NotFoundException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, Between } from 'typeorm'
-import { VirtualCard } from './entities/virtual-card.entity'
-import { User } from '../users/entities/user.entity'
+import { Between, Repository } from 'typeorm'
 import { Account } from '../accounts/entities/account.entity'
 import { Transaction } from '../transactions/entities/transaction.entity'
+import { User } from '../users/entities/user.entity'
+import { VirtualCard } from './entities/virtual-card.entity'
 
 @Injectable()
 export class VirtualCardsService {
@@ -21,12 +21,16 @@ export class VirtualCardsService {
     @InjectRepository(Account)
     private readonly accountsRepository: Repository<Account>,
     @InjectRepository(Transaction)
-    private readonly transactionsRepository: Repository<Transaction>,
+    private readonly transactionsRepository: Repository<Transaction>
   ) {}
 
   async create(
     userId: number,
-    dto: { accountId: number; cardType: 'debit' | 'credit'; dailyLimit?: number }
+    dto: {
+      accountId: number
+      cardType: 'debit' | 'credit'
+      dailyLimit?: number
+    }
   ): Promise<VirtualCard> {
     // Verify user exists
     const user = await this.usersRepository.findOne({ where: { id: userId } })
@@ -36,10 +40,12 @@ export class VirtualCardsService {
 
     // Verify account exists and belongs to user
     const account = await this.accountsRepository.findOne({
-      where: { id: dto.accountId, userId },
+      where: { id: dto.accountId, userId }
     })
     if (!account) {
-      throw new NotFoundException('Linked bank account not found or does not belong to you.')
+      throw new NotFoundException(
+        'Linked bank account not found or does not belong to you.'
+      )
     }
 
     // Generate random 16-digit card number (starting with 4 for Visa)
@@ -64,8 +70,8 @@ export class VirtualCardsService {
       expiryDate,
       cvv,
       cardType: dto.cardType,
-      dailyLimit: dto.dailyLimit || 50000.00,
-      isFrozen: false,
+      dailyLimit: dto.dailyLimit || 50000.0,
+      isFrozen: false
     })
 
     return this.virtualCardsRepository.save(card)
@@ -74,13 +80,13 @@ export class VirtualCardsService {
   async findByUserId(userId: number): Promise<VirtualCard[]> {
     return this.virtualCardsRepository.find({
       where: { userId },
-      order: { id: 'DESC' },
+      order: { id: 'DESC' }
     })
   }
 
   async findById(userId: number, cardId: number): Promise<VirtualCard> {
     const card = await this.virtualCardsRepository.findOne({
-      where: { id: cardId, userId },
+      where: { id: cardId, userId }
     })
     if (!card) {
       throw new NotFoundException('Virtual card not found.')
@@ -94,7 +100,11 @@ export class VirtualCardsService {
     return this.virtualCardsRepository.save(card)
   }
 
-  async updateLimit(userId: number, cardId: number, limit: number): Promise<VirtualCard> {
+  async updateLimit(
+    userId: number,
+    cardId: number,
+    limit: number
+  ): Promise<VirtualCard> {
     if (limit <= 0) {
       throw new BadRequestException('Daily limit must be a positive number.')
     }
@@ -108,9 +118,12 @@ export class VirtualCardsService {
     await this.virtualCardsRepository.remove(card)
   }
 
-  async validateCardUsage(cardNumber: string, amount: number): Promise<Account> {
+  async validateCardUsage(
+    cardNumber: string,
+    amount: number
+  ): Promise<Account> {
     const card = await this.virtualCardsRepository.findOne({
-      where: { cardNumber },
+      where: { cardNumber }
     })
     if (!card) {
       throw new BadRequestException('Virtual card number is invalid.')
@@ -122,7 +135,7 @@ export class VirtualCardsService {
 
     // Calculate how much was spent today using this card
     const last4 = card.cardNumber.slice(-4)
-    
+
     const startOfToday = new Date()
     startOfToday.setHours(0, 0, 0, 0)
     const endOfToday = new Date()
@@ -130,7 +143,7 @@ export class VirtualCardsService {
 
     // Fetch the account to get its number
     const account = await this.accountsRepository.findOne({
-      where: { id: card.accountId },
+      where: { id: card.accountId }
     })
     if (!account) {
       throw new NotFoundException('Account linked to card not found.')
@@ -140,8 +153,8 @@ export class VirtualCardsService {
     const transactions = await this.transactionsRepository.find({
       where: {
         fromAccount: account.accountNumber,
-        createdAt: Between(startOfToday, endOfToday),
-      },
+        createdAt: Between(startOfToday, endOfToday)
+      }
     })
 
     const cardSpentToday = transactions

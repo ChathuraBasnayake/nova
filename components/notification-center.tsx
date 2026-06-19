@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Bell } from '@/components/Icons'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context'
@@ -19,7 +19,9 @@ export default function NotificationCenter() {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  const [toast, setToast] = useState<{ title: string; message: string } | null>(null)
+  const [toast, setToast] = useState<{ title: string; message: string } | null>(
+    null
+  )
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -33,21 +35,23 @@ export default function NotificationCenter() {
     if (!token) return
 
     const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
-    const eventSource = new EventSource(`${apiBase}/notifications/stream?token=${encodeURIComponent(token)}`)
+    const eventSource = new EventSource(
+      `${apiBase}/notifications/stream?token=${encodeURIComponent(token)}`
+    )
 
     eventSource.onmessage = (event) => {
       try {
         const newNotification: NotificationItem = JSON.parse(event.data)
-        
+
         // Append to list
-        setNotifications(prev => [newNotification, ...prev])
-        
+        setNotifications((prev) => [newNotification, ...prev])
+
         // Display premium toast alert
         setToast({
           title: newNotification.title,
-          message: newNotification.message,
+          message: newNotification.message
         })
-        
+
         // Auto-hide toast after 5 seconds
         setTimeout(() => {
           setToast(null)
@@ -58,12 +62,18 @@ export default function NotificationCenter() {
     }
 
     eventSource.onerror = (err) => {
-      console.warn('SSE notification stream closed or lost connection. Retrying...', err)
+      console.warn(
+        'SSE notification stream closed or lost connection. Retrying...',
+        err
+      )
     }
 
     // 3. Handle click-outside close
     const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -77,7 +87,9 @@ export default function NotificationCenter() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await apiClient<{ ok: boolean; data: NotificationItem[] }>('/notifications')
+      const res = await apiClient<{ ok: boolean; data: NotificationItem[] }>(
+        '/notifications'
+      )
       if (res.ok) {
         setNotifications(res.data)
       }
@@ -88,12 +100,15 @@ export default function NotificationCenter() {
 
   const handleMarkAsRead = async (id: number) => {
     try {
-      const res = await apiClient<{ ok: boolean; data: NotificationItem }>(`/notifications/${id}/read`, {
-        method: 'PATCH',
-      })
+      const res = await apiClient<{ ok: boolean; data: NotificationItem }>(
+        `/notifications/${id}/read`,
+        {
+          method: 'PATCH'
+        }
+      )
       if (res.ok) {
-        setNotifications(prev =>
-          prev.map(n => (n.id === id ? { ...n, read: true } : n))
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, read: true } : n))
         )
       }
     } catch (err) {
@@ -102,19 +117,19 @@ export default function NotificationCenter() {
   }
 
   const handleMarkAllRead = async () => {
-    const unread = notifications.filter(n => !n.read)
-    await Promise.all(unread.map(n => handleMarkAsRead(n.id)))
+    const unread = notifications.filter((n) => !n.read)
+    await Promise.all(unread.map((n) => handleMarkAsRead(n.id)))
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const unreadCount = notifications.filter((n) => !n.read).length
 
   if (!user) return null
 
   return (
     <div className="notification-center-container" ref={dropdownRef}>
       {/* Trigger Button */}
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
+      <button
+        onClick={() => setIsOpen(!isOpen)}
         className={`bell-trigger ${isOpen ? 'active' : ''}`}
         aria-label="notifications"
       >
@@ -149,12 +164,12 @@ export default function NotificationCenter() {
                   month: 'short',
                   day: 'numeric',
                   hour: '2-digit',
-                  minute: '2-digit',
+                  minute: '2-digit'
                 })
-                
+
                 return (
-                  <div 
-                    key={n.id} 
+                  <div
+                    key={n.id}
                     className={`notification-item ${n.read ? 'read' : 'unread'}`}
                     onClick={() => !n.read && handleMarkAsRead(n.id)}
                     style={{ cursor: n.read ? 'default' : 'pointer' }}
@@ -180,7 +195,9 @@ export default function NotificationCenter() {
           <div className="toast-header">
             <span className="sparkle-icon">🔔</span>
             <strong>{toast.title}</strong>
-            <button onClick={() => setToast(null)} className="close-toast-btn">&times;</button>
+            <button onClick={() => setToast(null)} className="close-toast-btn">
+              &times;
+            </button>
           </div>
           <p className="toast-message">{toast.message}</p>
         </div>

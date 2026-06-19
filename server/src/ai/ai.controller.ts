@@ -1,10 +1,9 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
-import { CurrentUser } from '../common/decorators/current-user.decorator'
-import { AiService } from './ai.service'
-
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { IsNotEmpty, IsString } from 'class-validator'
+import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { AiService } from './ai.service'
 
 class ChatDto {
   @IsNotEmpty()
@@ -21,10 +20,7 @@ export class AiController {
 
   @Post('chat')
   @ApiOperation({ summary: 'Send message to Nova AI financial advisor' })
-  async chat(
-    @CurrentUser('userId') userId: number,
-    @Body() dto: ChatDto,
-  ) {
+  async chat(@CurrentUser('userId') userId: number, @Body() dto: ChatDto) {
     const response = await this.aiService.getChatResponse(userId, dto.message)
     return { ok: true, response }
   }

@@ -1,23 +1,24 @@
 import {
-  Injectable,
   ForbiddenException,
+  Injectable,
   NotFoundException,
-  OnModuleInit,
   OnModuleDestroy,
+  OnModuleInit
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, LessThanOrEqual } from 'typeorm'
-import { ScheduledTransfer } from './entities/scheduled-transfer.entity'
-import { CreateScheduledTransferDto } from './dto/create-scheduled-transfer.dto'
+import { LessThanOrEqual, Repository } from 'typeorm'
 import { Account } from '../accounts/entities/account.entity'
-import { TransferService } from '../transfer/transfer.service'
-import { NotificationsService } from '../notifications/notifications.service'
-import { User } from '../users/entities/user.entity'
 import { MailService } from '../mail/mail.service'
-
+import { NotificationsService } from '../notifications/notifications.service'
+import { TransferService } from '../transfer/transfer.service'
+import { User } from '../users/entities/user.entity'
+import { CreateScheduledTransferDto } from './dto/create-scheduled-transfer.dto'
+import { ScheduledTransfer } from './entities/scheduled-transfer.entity'
 
 @Injectable()
-export class ScheduledTransfersService implements OnModuleInit, OnModuleDestroy {
+export class ScheduledTransfersService
+  implements OnModuleInit, OnModuleDestroy
+{
   private schedulerInterval: NodeJS.Timeout | null = null
 
   constructor(
@@ -27,7 +28,7 @@ export class ScheduledTransfersService implements OnModuleInit, OnModuleDestroy 
     private readonly accountsRepository: Repository<Account>,
     private readonly transferService: TransferService,
     private readonly notificationsService: NotificationsService,
-    private readonly mailService: MailService,
+    private readonly mailService: MailService
   ) {}
 
   onModuleInit() {
@@ -45,18 +46,23 @@ export class ScheduledTransfersService implements OnModuleInit, OnModuleDestroy 
     }
   }
 
-  async create(dto: CreateScheduledTransferDto, userId: number): Promise<ScheduledTransfer> {
+  async create(
+    dto: CreateScheduledTransferDto,
+    userId: number
+  ): Promise<ScheduledTransfer> {
     // 1. Verify owner of source account
     const sourceAccount = await this.accountsRepository.findOne({
-      where: { accountNumber: dto.fromAccount, userId },
+      where: { accountNumber: dto.fromAccount, userId }
     })
     if (!sourceAccount) {
-      throw new ForbiddenException('Source account not found or does not belong to you.')
+      throw new ForbiddenException(
+        'Source account not found or does not belong to you.'
+      )
     }
 
     // 2. Verify destination account exists
     const destAccount = await this.accountsRepository.findOne({
-      where: { accountNumber: dto.toAccount },
+      where: { accountNumber: dto.toAccount }
     })
     if (!destAccount) {
       throw new NotFoundException('Destination account not found.')
@@ -78,13 +84,13 @@ export class ScheduledTransfersService implements OnModuleInit, OnModuleDestroy 
   async findAll(userId: number): Promise<ScheduledTransfer[]> {
     return this.scheduledTransferRepository.find({
       where: { userId },
-      order: { nextRun: 'ASC' },
+      order: { nextRun: 'ASC' }
     })
   }
 
   async remove(id: number, userId: number): Promise<void> {
     const scheduled = await this.scheduledTransferRepository.findOne({
-      where: { id, userId },
+      where: { id, userId }
     })
     if (!scheduled) {
       throw new NotFoundException('Scheduled transfer not found.')
@@ -100,59 +106,78 @@ export class ScheduledTransfersService implements OnModuleInit, OnModuleDestroy 
     const dueTransfers = await this.scheduledTransferRepository.find({
       where: {
         active: true,
-        nextRun: LessThanOrEqual(now),
-      },
+        nextRun: LessThanOrEqual(now)
+      }
     })
 
     if (dueTransfers.length === 0) return
 
-    console.log(`[Scheduler] Found ${dueTransfers.length} scheduled transfers to process.`)
+    console.log(
+      `[Scheduler] Found ${dueTransfers.length} scheduled transfers to process.`
+    )
 
     for (const transfer of dueTransfers) {
       try {
-        console.log(`[Scheduler] Executing scheduled transfer ${transfer.id}: Rs. ${transfer.amount} from ${transfer.fromAccount} to ${transfer.toAccount}`)
+        console.log(
+          `[Scheduler] Executing scheduled transfer ${transfer.id}: Rs. ${transfer.amount} from ${transfer.fromAccount} to ${transfer.toAccount}`
+        )
         // Execute transaction
         await this.transferService.execute(
           {
             fromAccount: transfer.fromAccount,
             toAccount: transfer.toAccount,
             amount: Number(transfer.amount),
-            description: transfer.description || 'Scheduled Transfer',
+            description: transfer.description || 'Scheduled Transfer'
           },
-          transfer.userId,
+          transfer.userId
         )
-        console.log(`[Scheduler] Scheduled transfer ${transfer.id} executed successfully.`)
+        console.log(
+          `[Scheduler] Scheduled transfer ${transfer.id} executed successfully.`
+        )
       } catch (err: any) {
-        console.error(`[Scheduler] Scheduled transfer ${transfer.id} failed:`, err.message || err)
+        console.error(
+          `[Scheduler] Scheduled transfer ${transfer.id} failed:`,
+          err.message || err
+        )
         // Send a failure notification
         try {
           await this.notificationsService.create(
             transfer.userId,
             'TRANSFER_FAILED',
             'Scheduled Transfer Failed',
-            `Your scheduled transfer of Rs. ${Number(transfer.amount).toLocaleString('en-US')} to ${transfer.toAccount} failed due to: ${err.message || 'Unknown error'}.`,
+            `Your scheduled transfer of Rs. ${Number(transfer.amount).toLocaleString('en-US')} to ${transfer.toAccount} failed due to: ${err.message || 'Unknown error'}.`
           )
 
           // Fetch user and send transfer failed email
-          const user = await this.accountsRepository.manager.findOne(User, { where: { id: transfer.userId } })
+          const user = await this.accountsRepository.manager.findOne(User, {
+            where: { id: transfer.userId }
+          })
           if (user) {
             await this.mailService.sendTransferFailedEmail(
               user.email,
               user.fullName,
               Number(transfer.amount),
               transfer.toAccount,
-              err.message || 'Unknown error',
+              err.message || 'Unknown error'
             )
           }
         } catch (notifyErr) {
-          console.error('[Scheduler] Failed to create scheduled transfer error notification:', notifyErr)
+          console.error(
+            '[Scheduler] Failed to create scheduled transfer error notification:',
+            notifyErr
+          )
         }
       } finally {
         // Compute next run date to keep scheduler advanced
-        const nextRun = this.calculateNextRun(transfer.nextRun, transfer.frequency)
+        const nextRun = this.calculateNextRun(
+          transfer.nextRun,
+          transfer.frequency
+        )
         transfer.nextRun = nextRun
         await this.scheduledTransferRepository.save(transfer)
-        console.log(`[Scheduler] Scheduled transfer ${transfer.id} updated. Next run: ${nextRun.toISOString()}`)
+        console.log(
+          `[Scheduler] Scheduled transfer ${transfer.id} updated. Next run: ${nextRun.toISOString()}`
+        )
       }
     }
   }

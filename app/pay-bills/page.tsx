@@ -1,19 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import Sidebar from '../../components/sidebar'
-import {
-  Search,
-  Settings,
-  CheckCircle2,
-  AlertTriangle,
-  ChevronLeft
-} from '../../components/Icons'
+import { useEffect, useState } from 'react'
+import NotificationCenter from '@/components/notification-center'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context'
-import NotificationCenter from '@/components/notification-center'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  Search,
+  Settings
+} from '../../components/Icons'
+import Sidebar from '../../components/sidebar'
 
 type Biller = {
   id: string
@@ -56,7 +56,8 @@ type FormErrors = {
 export default function PayBillsPage() {
   const { user } = useAuth()
   const [accounts, setAccounts] = useState<Account[]>([])
-  const [selectedFromAccount, setSelectedFromAccount] = useState<Account | null>(null)
+  const [selectedFromAccount, setSelectedFromAccount] =
+    useState<Account | null>(null)
   const [loadingAccounts, setLoadingAccounts] = useState(true)
 
   const [screen, setScreen] = useState<Screen>('select')
@@ -81,7 +82,9 @@ export default function PayBillsPage() {
       try {
         const [accRes, cardsRes] = await Promise.all([
           apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
-          apiClient<{ ok: boolean; data: any[] }>('/virtual-cards').catch(() => ({ ok: false, data: [] })),
+          apiClient<{ ok: boolean; data: any[] }>('/virtual-cards').catch(
+            () => ({ ok: false, data: [] })
+          )
         ])
         if (accRes.ok && accRes.data && accRes.data.length > 0) {
           setAccounts(accRes.data)
@@ -136,10 +139,14 @@ export default function PayBillsPage() {
       const amount = Number(dueAmount)
       if (Number.isNaN(amount) || amount <= 0) {
         newErrors.dueAmount = 'Enter a valid amount greater than 0'
-      } else if (!useCard && selectedFromAccount && amount > Number(selectedFromAccount.balance)) {
+      } else if (
+        !useCard &&
+        selectedFromAccount &&
+        amount > Number(selectedFromAccount.balance)
+      ) {
         newErrors.dueAmount = 'Amount exceeds available balance'
       } else if (useCard && selectedCard) {
-        const linkedAcc = accounts.find(a => a.id === selectedCard.accountId)
+        const linkedAcc = accounts.find((a) => a.id === selectedCard.accountId)
         if (linkedAcc && amount > Number(linkedAcc.balance)) {
           newErrors.dueAmount = 'Amount exceeds linked account balance'
         }
@@ -151,7 +158,12 @@ export default function PayBillsPage() {
   }
 
   async function handlePayNow() {
-    if (!validateForm() || (!useCard && !selectedFromAccount) || (useCard && !selectedCard) || !selectedBiller) {
+    if (
+      !validateForm() ||
+      (!useCard && !selectedFromAccount) ||
+      (useCard && !selectedCard) ||
+      !selectedBiller
+    ) {
       return
     }
 
@@ -161,9 +173,9 @@ export default function PayBillsPage() {
       const payload: any = {
         toAccount: '9999999999', // Seeded Admin Vault
         amount: Number(dueAmount),
-        description: `Bill Payment: ${selectedBiller.name} - Ref: ${billId} (${remarks || 'No remarks'})`,
+        description: `Bill Payment: ${selectedBiller.name} - Ref: ${billId} (${remarks || 'No remarks'})`
       }
-      
+
       if (useCard) {
         payload.cardId = selectedCard.id
       } else {
@@ -171,17 +183,28 @@ export default function PayBillsPage() {
       }
 
       // Execute the bill payment as a transfer to Admin Vault
-      const res = await apiClient<{ ok: boolean; message: string; transaction: any }>('/transfer', {
+      const res = await apiClient<{
+        ok: boolean
+        message: string
+        transaction: any
+      }>('/transfer', {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       })
 
       if (res.ok) {
-        setConfirmationNumber(String(res.transaction?.id || Math.floor(10000000 + Math.random() * 90000000)))
+        setConfirmationNumber(
+          String(
+            res.transaction?.id ||
+              Math.floor(10000000 + Math.random() * 90000000)
+          )
+        )
         setScreen('success')
       }
     } catch (err: any) {
-      setFailReason(err?.message || 'Bill payment failed. Please check details.')
+      setFailReason(
+        err?.message || 'Bill payment failed. Please check details.'
+      )
       setScreen('failed')
     } finally {
       setLoading(false)
@@ -197,7 +220,7 @@ export default function PayBillsPage() {
     setRemarks('')
     setErrors({})
     // Reload accounts
-    apiClient<{ ok: boolean; data: Account[] }>('/accounts').then(res => {
+    apiClient<{ ok: boolean; data: Account[] }>('/accounts').then((res) => {
       if (res.ok && res.data) {
         setAccounts(res.data)
         setSelectedFromAccount(res.data[0])
@@ -221,7 +244,11 @@ export default function PayBillsPage() {
                 alt="Profile"
                 width={36}
                 height={36}
-                style={{ objectFit: 'cover', borderRadius: '50%', background: 'white' }}
+                style={{
+                  objectFit: 'cover',
+                  borderRadius: '50%',
+                  background: 'white'
+                }}
               />
             </Link>
           </div>
@@ -263,7 +290,6 @@ export default function PayBillsPage() {
                   <ChevronLeft size={16} />
                   Back to billers
                 </button>
-
                 <div className="biller-header">
                   <div className="biller-icon small logo-circle">
                     <Image
@@ -277,22 +303,44 @@ export default function PayBillsPage() {
                   <span className="biller-header-name">
                     {selectedBiller.name}
                   </span>
-                </div>                 {/* Pay using Card Checkbox */}
+                </div>{' '}
+                {/* Pay using Card Checkbox */}
                 {cards.length > 0 && (
-                  <div className="field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <div
+                    className="field"
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      marginBottom: '1rem'
+                    }}
+                  >
                     <input
                       type="checkbox"
                       id="pay-using-card-checkbox"
                       checked={useCard}
                       onChange={(e) => setUseCard(e.target.checked)}
-                      style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        cursor: 'pointer',
+                        margin: 0
+                      }}
                     />
-                    <label htmlFor="pay-using-card-checkbox" style={{ cursor: 'pointer', userSelect: 'none', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
+                    <label
+                      htmlFor="pay-using-card-checkbox"
+                      style={{
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontSize: '0.9rem',
+                        color: '#555',
+                        fontWeight: 600
+                      }}
+                    >
                       Pay using Virtual Card
                     </label>
                   </div>
                 )}
-
                 {/* From Account / Card */}
                 <div className="field">
                   <label>{useCard ? 'Select Card' : 'Pay From Account'}</label>
@@ -300,7 +348,9 @@ export default function PayBillsPage() {
                     <select
                       value={selectedCard?.id || ''}
                       onChange={(e) => {
-                        const selected = cards.find(c => c.id === Number(e.target.value))
+                        const selected = cards.find(
+                          (c) => c.id === Number(e.target.value)
+                        )
                         setSelectedCard(selected || null)
                       }}
                       className="underline-select"
@@ -311,57 +361,69 @@ export default function PayBillsPage() {
                         padding: '0.85rem 1.1rem',
                         fontSize: '0.95rem',
                         color: '#333',
-                        outline: 'none',
+                        outline: 'none'
                       }}
                     >
-                      {cards.map(c => {
-                        const linkedAcc = accounts.find(a => a.id === c.accountId)
-                        const balanceStr = linkedAcc ? ` - Balance: Rs. ${Number(linkedAcc.balance).toLocaleString()}` : ''
+                      {cards.map((c) => {
+                        const linkedAcc = accounts.find(
+                          (a) => a.id === c.accountId
+                        )
+                        const balanceStr = linkedAcc
+                          ? ` - Balance: Rs. ${Number(linkedAcc.balance).toLocaleString()}`
+                          : ''
                         const limitStr = `(Limit: Rs. ${Number(c.dailyLimit).toLocaleString()})`
                         const isFrozenStr = c.isFrozen ? ' [FROZEN]' : ''
                         return (
                           <option key={c.id} value={c.id} disabled={c.isFrozen}>
-                            {c.cardType.toUpperCase()} *{c.cardNumber.slice(-4)}{isFrozenStr} {limitStr}{balanceStr}
+                            {c.cardType.toUpperCase()} *{c.cardNumber.slice(-4)}
+                            {isFrozenStr} {limitStr}
+                            {balanceStr}
                           </option>
                         )
                       })}
                     </select>
+                  ) : loadingAccounts ? (
+                    <div className="text-sm text-gray-500">
+                      Loading accounts...
+                    </div>
+                  ) : accounts.length > 0 ? (
+                    <select
+                      value={selectedFromAccount?.accountNumber || ''}
+                      onChange={(e) => {
+                        const selected = accounts.find(
+                          (acc) => acc.accountNumber === e.target.value
+                        )
+                        setSelectedFromAccount(selected || null)
+                      }}
+                      className="underline-select"
+                      style={{
+                        background: '#f3f4f6',
+                        border: '1.5px solid transparent',
+                        borderRadius: '12px',
+                        padding: '0.85rem 1.1rem',
+                        fontSize: '0.95rem',
+                        color: '#333',
+                        outline: 'none'
+                      }}
+                    >
+                      {accounts.map((acc) => (
+                        <option key={acc.id} value={acc.accountNumber}>
+                          {acc.accountName} ({acc.accountNumber}) - Rs.{' '}
+                          {Number(acc.balance).toLocaleString('en-US', {
+                            minimumFractionDigits: 2
+                          })}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
-                    loadingAccounts ? (
-                      <div className="text-sm text-gray-500">Loading accounts...</div>
-                    ) : accounts.length > 0 ? (
-                      <select
-                        value={selectedFromAccount?.accountNumber || ''}
-                        onChange={(e) => {
-                          const selected = accounts.find(acc => acc.accountNumber === e.target.value)
-                          setSelectedFromAccount(selected || null)
-                        }}
-                        className="underline-select"
-                        style={{
-                          background: '#f3f4f6',
-                          border: '1.5px solid transparent',
-                          borderRadius: '12px',
-                          padding: '0.85rem 1.1rem',
-                          fontSize: '0.95rem',
-                          color: '#333',
-                          outline: 'none',
-                        }}
-                      >
-                        {accounts.map(acc => (
-                          <option key={acc.id} value={acc.accountNumber}>
-                            {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="text-sm text-red-600">No bank accounts available.</div>
-                    )
+                    <div className="text-sm text-red-600">
+                      No bank accounts available.
+                    </div>
                   )}
                   {errors.fromAccount && (
                     <span className="error-text">{errors.fromAccount}</span>
                   )}
                 </div>
-
                 {/* Biller Account Number */}
                 <div className="field">
                   <label>Biller Account number</label>
@@ -375,7 +437,6 @@ export default function PayBillsPage() {
                     <span className="error-text">{errors.accountNumber}</span>
                   )}
                 </div>
-
                 {/* Bill ID */}
                 <div className="field">
                   <label>Bill ID</label>
@@ -389,7 +450,6 @@ export default function PayBillsPage() {
                     <span className="error-text">{errors.billId}</span>
                   )}
                 </div>
-
                 {/* Due Amount */}
                 <div className="field">
                   <label>Due Amount</label>
@@ -404,7 +464,6 @@ export default function PayBillsPage() {
                     <span className="error-text">{errors.dueAmount}</span>
                   )}
                 </div>
-
                 {/* Remarks */}
                 <div className="field">
                   <label>Remarks</label>
@@ -414,7 +473,6 @@ export default function PayBillsPage() {
                     placeholder="Optional"
                   />
                 </div>
-
                 <button
                   className="pay-now-btn"
                   onClick={handlePayNow}

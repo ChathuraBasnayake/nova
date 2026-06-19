@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
-import * as nodemailer from 'nodemailer'
 import * as fs from 'fs'
+import * as nodemailer from 'nodemailer'
 import * as path from 'path'
 
 @Injectable()
@@ -23,18 +23,22 @@ export class MailService implements OnModuleInit {
         secure: smtpPort === '465',
         auth: {
           user: smtpUser,
-          pass: smtpPass,
-        },
+          pass: smtpPass
+        }
       })
     } else {
-      this.logger.warn('SMTP credentials not fully configured in environment. MailService running in Local Inspector Mode.')
+      this.logger.warn(
+        'SMTP credentials not fully configured in environment. MailService running in Local Inspector Mode.'
+      )
       // Ensure the /emails directory exists
       try {
         if (!fs.existsSync(this.emailsDir)) {
           fs.mkdirSync(this.emailsDir, { recursive: true })
         }
       } catch (err: any) {
-        this.logger.error(`Failed to create emails directory at ${this.emailsDir}: ${err.message}`)
+        this.logger.error(
+          `Failed to create emails directory at ${this.emailsDir}: ${err.message}`
+        )
       }
     }
   }
@@ -81,19 +85,27 @@ export class MailService implements OnModuleInit {
 </html>`
   }
 
-  async sendEmail(to: string, subject: string, subtitle: string, content: string): Promise<void> {
+  async sendEmail(
+    to: string,
+    subject: string,
+    subtitle: string,
+    content: string
+  ): Promise<void> {
     const html = this.wrapTemplate(subtitle, content)
 
     if (this.transporter) {
       try {
-        const fromEmail = process.env.SMTP_FROM || '"Nova Bank Support" <support@novabank.test>'
+        const fromEmail =
+          process.env.SMTP_FROM || '"Nova Bank Support" <support@novabank.test>'
         await this.transporter.sendMail({
           from: fromEmail,
           to,
           subject,
-          html,
+          html
         })
-        this.logger.log(`SMTP Email sent successfully to ${to} (Subject: ${subject})`)
+        this.logger.log(
+          `SMTP Email sent successfully to ${to} (Subject: ${subject})`
+        )
       } catch (err: any) {
         this.logger.error(`SMTP Email sending failed to ${to}: ${err.message}`)
       }
@@ -110,13 +122,17 @@ export class MailService implements OnModuleInit {
         const filepath = path.join(this.emailsDir, filename)
 
         fs.writeFileSync(filepath, html, 'utf8')
-        
+
         // Convert to absolute URI for clickable link in terminal
         const fileUri = `file:///${filepath.replace(/\\/g, '/')}`
-        this.logger.log(`[Local Mail Inspector] Email mock generated for ${to}:`)
+        this.logger.log(
+          `[Local Mail Inspector] Email mock generated for ${to}:`
+        )
         this.logger.log(`👉 ${fileUri}`)
       } catch (err: any) {
-        this.logger.error(`Failed to write local mock email file: ${err.message}`)
+        this.logger.error(
+          `Failed to write local mock email file: ${err.message}`
+        )
       }
     }
   }
@@ -149,7 +165,14 @@ export class MailService implements OnModuleInit {
     await this.sendEmail(to, 'Welcome to Nova Bank!', subtitle, content)
   }
 
-  async sendTransferSuccessEmail(to: string, name: string, fromAccount: string, toAccount: string, amount: number, referenceId: string) {
+  async sendTransferSuccessEmail(
+    to: string,
+    name: string,
+    fromAccount: string,
+    toAccount: string,
+    amount: number,
+    referenceId: string
+  ) {
     const subtitle = 'Transaction Successful'
     const content = `
       <h2>Fund Transfer Receipt</h2>
@@ -179,7 +202,13 @@ export class MailService implements OnModuleInit {
     await this.sendEmail(to, 'Nova Bank Transfer Receipt', subtitle, content)
   }
 
-  async sendTransferFailedEmail(to: string, name: string, amount: number, toAccount: string, reason: string) {
+  async sendTransferFailedEmail(
+    to: string,
+    name: string,
+    amount: number,
+    toAccount: string,
+    reason: string
+  ) {
     const subtitle = 'Scheduled Transfer Failed'
     const content = `
       <h2>Alert: Scheduled Transfer Failed</h2>
@@ -205,7 +234,12 @@ export class MailService implements OnModuleInit {
         <a href="http://localhost:3000/login" class="btn">Manage Scheduled Payments</a>
       </div>
     `
-    await this.sendEmail(to, 'Alert: Scheduled Transfer Failed', subtitle, content)
+    await this.sendEmail(
+      to,
+      'Alert: Scheduled Transfer Failed',
+      subtitle,
+      content
+    )
   }
 
   async sendPasswordResetEmail(to: string, name: string) {
@@ -222,6 +256,11 @@ export class MailService implements OnModuleInit {
         <a href="http://localhost:3000/login" class="btn" style="background-color: #dc2626;">Lock My Account</a>
       </div>
     `
-    await this.sendEmail(to, 'Nova Bank Security Alert: Password Updated', subtitle, content)
+    await this.sendEmail(
+      to,
+      'Nova Bank Security Alert: Password Updated',
+      subtitle,
+      content
+    )
   }
 }

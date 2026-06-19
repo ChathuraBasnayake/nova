@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import NotificationCenter from '@/components/notification-center'
 import Sidebar from '@/components/sidebar'
 import { apiClient } from '@/lib/api-client'
-import NotificationCenter from '@/components/notification-center'
 import styles from './savings-jars.module.css'
 
 interface Account {
@@ -37,7 +37,9 @@ export default function SavingsJarsPage() {
   const [newJarRule, setNewJarRule] = useState<number>(100)
 
   // Modal active states
-  const [activeModal, setActiveModal] = useState<'deposit' | 'withdraw' | 'delete' | null>(null)
+  const [activeModal, setActiveModal] = useState<
+    'deposit' | 'withdraw' | 'delete' | null
+  >(null)
   const [selectedJar, setSelectedJar] = useState<SavingsJar | null>(null)
 
   // Modal form states
@@ -48,7 +50,7 @@ export default function SavingsJarsPage() {
     try {
       const [accountsRes, jarsRes] = await Promise.all([
         apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
-        apiClient<{ ok: boolean; data: SavingsJar[] }>('/savings-jars'),
+        apiClient<{ ok: boolean; data: SavingsJar[] }>('/savings-jars')
       ])
 
       if (accountsRes.ok && accountsRes.data) {
@@ -91,8 +93,8 @@ export default function SavingsJarsPage() {
           name: newJarName.trim(),
           targetAmount: target,
           roundUpEnabled: newJarRoundUp,
-          roundUpRule: newJarRoundUp ? Number(newJarRule) : undefined,
-        }),
+          roundUpRule: newJarRoundUp ? Number(newJarRule) : undefined
+        })
       })
       alert('Savings jar created successfully!')
       setNewJarName('')
@@ -107,15 +109,22 @@ export default function SavingsJarsPage() {
   const handleToggleRoundUp = async (jar: SavingsJar) => {
     const nextRoundUpState = !jar.roundUpEnabled
     try {
-      const res = await apiClient<{ ok: boolean; data: SavingsJar }>(`/savings-jars/${jar.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          roundUpEnabled: nextRoundUpState,
-          roundUpRule: jar.roundUpRule,
-        }),
-      })
+      const res = await apiClient<{ ok: boolean; data: SavingsJar }>(
+        `/savings-jars/${jar.id}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            roundUpEnabled: nextRoundUpState,
+            roundUpRule: jar.roundUpRule
+          })
+        }
+      )
       if (res.ok) {
-        alert(nextRoundUpState ? `Round-up activated for "${jar.name}"! Others have been disabled.` : `Round-up disabled for "${jar.name}".`)
+        alert(
+          nextRoundUpState
+            ? `Round-up activated for "${jar.name}"! Others have been disabled.`
+            : `Round-up disabled for "${jar.name}".`
+        )
         fetchData()
       }
     } catch (err: any) {
@@ -125,12 +134,15 @@ export default function SavingsJarsPage() {
 
   const handleUpdateRule = async (jar: SavingsJar, rule: number) => {
     try {
-      const res = await apiClient<{ ok: boolean; data: SavingsJar }>(`/savings-jars/${jar.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          roundUpRule: rule,
-        }),
-      })
+      const res = await apiClient<{ ok: boolean; data: SavingsJar }>(
+        `/savings-jars/${jar.id}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            roundUpRule: rule
+          })
+        }
+      )
       if (res.ok) {
         fetchData()
       }
@@ -175,26 +187,32 @@ export default function SavingsJarsPage() {
 
     try {
       if (activeModal === 'deposit') {
-        const res = await apiClient<{ ok: boolean; message: string }>(`/savings-jars/${selectedJar.id}/deposit`, {
-          method: 'POST',
-          body: JSON.stringify({
-            accountNumber: transactionAccount,
-            amount,
-          }),
-        })
+        const res = await apiClient<{ ok: boolean; message: string }>(
+          `/savings-jars/${selectedJar.id}/deposit`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              accountNumber: transactionAccount,
+              amount
+            })
+          }
+        )
         if (res.ok) {
           alert(`Deposited Rs. ${amount.toLocaleString()} successfully!`)
           setActiveModal(null)
           fetchData()
         }
       } else if (activeModal === 'withdraw') {
-        const res = await apiClient<{ ok: boolean; message: string }>(`/savings-jars/${selectedJar.id}/withdraw`, {
-          method: 'POST',
-          body: JSON.stringify({
-            accountNumber: transactionAccount,
-            amount,
-          }),
-        })
+        const res = await apiClient<{ ok: boolean; message: string }>(
+          `/savings-jars/${selectedJar.id}/withdraw`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              accountNumber: transactionAccount,
+              amount
+            })
+          }
+        )
         if (res.ok) {
           alert(`Withdrew Rs. ${amount.toLocaleString()} successfully!`)
           setActiveModal(null)
@@ -202,10 +220,12 @@ export default function SavingsJarsPage() {
         }
       } else if (activeModal === 'delete') {
         const url = `/savings-jars/${selectedJar.id}${
-          Number(selectedJar.currentAmount) > 0 ? `?refundAccount=${transactionAccount}` : ''
+          Number(selectedJar.currentAmount) > 0
+            ? `?refundAccount=${transactionAccount}`
+            : ''
         }`
         const res = await apiClient<{ ok: boolean; message: string }>(url, {
-          method: 'DELETE',
+          method: 'DELETE'
         })
         if (res.ok) {
           alert(`Savings jar deactivated successfully. ${res.message || ''}`)
@@ -249,22 +269,25 @@ export default function SavingsJarsPage() {
                 {jars.map((jar) => {
                   const currentVal = Number(jar.currentAmount)
                   const targetVal = Number(jar.targetAmount)
-                  const percent = targetVal > 0 ? Math.min((currentVal / targetVal) * 100, 100) : 0
+                  const percent =
+                    targetVal > 0
+                      ? Math.min((currentVal / targetVal) * 100, 100)
+                      : 0
 
                   return (
                     <div className={styles.jarCard} key={jar.id}>
                       {/* Realistic 3D Glass Jar */}
                       <div className={styles.jarContainer}>
                         <div className={styles.jarNeck} />
-                        
+
                         {/* Dynamic percentage overlay */}
                         <div className={styles.jarPercent}>
                           {Math.round(percent)}%
                         </div>
 
                         {/* Gold Liquid height controlled by progress */}
-                        <div 
-                          className={styles.liquid} 
+                        <div
+                          className={styles.liquid}
                           style={{ height: `${percent}%` }}
                         >
                           {percent > 0 && (
@@ -272,9 +295,33 @@ export default function SavingsJarsPage() {
                               <div className={styles.wave} />
                               <div className={styles.waveSecondary} />
                               {/* Glowing floating bubbles */}
-                              <div className={styles.bubble} style={{ left: '20%', animationDelay: '0s', width: '8px', height: '8px' }} />
-                              <div className={styles.bubble} style={{ left: '45%', animationDelay: '1s', width: '12px', height: '12px' }} />
-                              <div className={styles.bubble} style={{ left: '70%', animationDelay: '2.5s', width: '6px', height: '6px' }} />
+                              <div
+                                className={styles.bubble}
+                                style={{
+                                  left: '20%',
+                                  animationDelay: '0s',
+                                  width: '8px',
+                                  height: '8px'
+                                }}
+                              />
+                              <div
+                                className={styles.bubble}
+                                style={{
+                                  left: '45%',
+                                  animationDelay: '1s',
+                                  width: '12px',
+                                  height: '12px'
+                                }}
+                              />
+                              <div
+                                className={styles.bubble}
+                                style={{
+                                  left: '70%',
+                                  animationDelay: '2.5s',
+                                  width: '6px',
+                                  height: '6px'
+                                }}
+                              />
                             </>
                           )}
                         </div>
@@ -284,12 +331,24 @@ export default function SavingsJarsPage() {
                       <div className={styles.jarInfo}>
                         <h3 className={styles.jarName}>{jar.name}</h3>
                         <p className={styles.jarProgress}>
-                          Rs. {currentVal.toLocaleString('en-US')} / Rs. {targetVal.toLocaleString('en-US')}
+                          Rs. {currentVal.toLocaleString('en-US')} / Rs.{' '}
+                          {targetVal.toLocaleString('en-US')}
                         </p>
 
                         {/* Round-up indicator / configuration */}
-                        <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                          <label className={styles.checkboxLabel} style={{ justifyContent: 'center' }}>
+                        <div
+                          style={{
+                            marginTop: '0.5rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <label
+                            className={styles.checkboxLabel}
+                            style={{ justifyContent: 'center' }}
+                          >
                             <input
                               type="checkbox"
                               checked={jar.roundUpEnabled}
@@ -300,13 +359,27 @@ export default function SavingsJarsPage() {
                           </label>
 
                           {jar.roundUpEnabled && (
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontSize: '0.8rem' }}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                gap: '0.5rem',
+                                alignItems: 'center',
+                                fontSize: '0.8rem'
+                              }}
+                            >
                               <span>Rule:</span>
                               <select
                                 value={jar.roundUpRule}
-                                onChange={(e) => handleUpdateRule(jar, Number(e.target.value))}
+                                onChange={(e) =>
+                                  handleUpdateRule(jar, Number(e.target.value))
+                                }
                                 className={styles.select}
-                                style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', width: 'auto', background: 'rgba(255,255,255,0.05)' }}
+                                style={{
+                                  padding: '0.2rem 0.5rem',
+                                  fontSize: '0.8rem',
+                                  width: 'auto',
+                                  background: 'rgba(255,255,255,0.05)'
+                                }}
                               >
                                 <option value={50}>Nearest Rs. 50</option>
                                 <option value={100}>Nearest Rs. 100</option>
@@ -318,22 +391,22 @@ export default function SavingsJarsPage() {
 
                       {/* Deposit / Withdraw / Delete Buttons */}
                       <div className={styles.actions}>
-                        <button 
-                          className={styles.btnDeposit} 
+                        <button
+                          className={styles.btnDeposit}
                           onClick={() => openDepositModal(jar)}
                         >
                           Save
                         </button>
-                        <button 
-                          className={styles.btnWithdraw} 
+                        <button
+                          className={styles.btnWithdraw}
                           onClick={() => openWithdrawModal(jar)}
                         >
                           Withdraw
                         </button>
                       </div>
 
-                      <button 
-                        className={styles.btnDelete} 
+                      <button
+                        className={styles.btnDelete}
                         onClick={() => openDeleteModal(jar)}
                       >
                         Deactivate Jar
@@ -343,7 +416,10 @@ export default function SavingsJarsPage() {
                 })}
               </div>
             ) : (
-              <div style={{ color: 'rgba(255,255,255,0.5)' }}>No savings jars created yet. Set a goal in the panel on the right to start saving!</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)' }}>
+                No savings jars created yet. Set a goal in the panel on the
+                right to start saving!
+              </div>
             )}
           </div>
 
@@ -389,14 +465,20 @@ export default function SavingsJarsPage() {
 
               {newJarRoundUp && (
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Round-Up Nearest Factor</label>
+                  <label className={styles.formLabel}>
+                    Round-Up Nearest Factor
+                  </label>
                   <select
                     value={newJarRule}
                     onChange={(e) => setNewJarRule(Number(e.target.value))}
                     className={styles.select}
                   >
-                    <option value={50}>Nearest Rs. 50 (e.g. Rs. 210 rounds up to Rs. 250)</option>
-                    <option value={100}>Nearest Rs. 100 (e.g. Rs. 210 rounds up to Rs. 300)</option>
+                    <option value={50}>
+                      Nearest Rs. 50 (e.g. Rs. 210 rounds up to Rs. 250)
+                    </option>
+                    <option value={100}>
+                      Nearest Rs. 100 (e.g. Rs. 210 rounds up to Rs. 300)
+                    </option>
                   </select>
                 </div>
               )}
@@ -415,18 +497,21 @@ export default function SavingsJarsPage() {
           <div className={styles.modalContent}>
             <h3 className={styles.modalTitle}>
               {activeModal === 'deposit' && `Save into "${selectedJar.name}"`}
-              {activeModal === 'withdraw' && `Withdraw from "${selectedJar.name}"`}
+              {activeModal === 'withdraw' &&
+                `Withdraw from "${selectedJar.name}"`}
               {activeModal === 'delete' && `Deactivate "${selectedJar.name}"`}
             </h3>
 
             <form onSubmit={handleModalSubmit} className={styles.form}>
               {/* If delete and balance > 0, or if deposit/withdraw, pick bank account */}
-              {(activeModal !== 'delete' || Number(selectedJar.currentAmount) > 0) && (
+              {(activeModal !== 'delete' ||
+                Number(selectedJar.currentAmount) > 0) && (
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>
                     {activeModal === 'deposit' && 'Debit Bank Account'}
                     {activeModal === 'withdraw' && 'Credit Bank Account'}
-                    {activeModal === 'delete' && 'Refund Destination Account (Current Balance exists)'}
+                    {activeModal === 'delete' &&
+                      'Refund Destination Account (Current Balance exists)'}
                   </label>
                   <select
                     value={transactionAccount}
@@ -436,7 +521,11 @@ export default function SavingsJarsPage() {
                   >
                     {accounts.map((acc) => (
                       <option key={acc.id} value={acc.accountNumber}>
-                        {acc.accountName} (Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })})
+                        {acc.accountName} (Rs.{' '}
+                        {Number(acc.balance).toLocaleString('en-US', {
+                          minimumFractionDigits: 2
+                        })}
+                        )
                       </option>
                     ))}
                   </select>
@@ -457,27 +546,40 @@ export default function SavingsJarsPage() {
                     required
                   />
                   {activeModal === 'withdraw' && (
-                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>
-                      Max available: Rs. {Number(selectedJar.currentAmount).toLocaleString('en-US')}
+                    <span
+                      style={{
+                        fontSize: '0.8rem',
+                        color: 'rgba(255,255,255,0.5)',
+                        marginTop: '2px'
+                      }}
+                    >
+                      Max available: Rs.{' '}
+                      {Number(selectedJar.currentAmount).toLocaleString(
+                        'en-US'
+                      )}
                     </span>
                   )}
                 </div>
               )}
 
               {activeModal === 'delete' && (
-                <p style={{ fontSize: '0.85rem', color: '#fca5a5', lineHeight: '1.4' }}>
-                  ⚠️ Deactivating this jar will permanently remove it. 
-                  {Number(selectedJar.currentAmount) > 0 ? (
-                    ` The current savings of Rs. ${Number(selectedJar.currentAmount).toLocaleString('en-US')} will be automatically returned to your refund account.`
-                  ) : (
-                    ' There are no remaining funds in this jar.'
-                  )}
+                <p
+                  style={{
+                    fontSize: '0.85rem',
+                    color: '#fca5a5',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  ⚠️ Deactivating this jar will permanently remove it.
+                  {Number(selectedJar.currentAmount) > 0
+                    ? ` The current savings of Rs. ${Number(selectedJar.currentAmount).toLocaleString('en-US')} will be automatically returned to your refund account.`
+                    : ' There are no remaining funds in this jar.'}
                 </p>
               )}
 
               <div className={styles.modalActions}>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className={styles.btnCancel}
                   onClick={() => setActiveModal(null)}
                 >

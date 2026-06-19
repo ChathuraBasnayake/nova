@@ -22,7 +22,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
       ]),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'nova-bank-dev-secret-change-in-production',
+      secretOrKey:
+        process.env.JWT_SECRET || 'nova-bank-dev-secret-change-in-production'
     })
   }
 
@@ -33,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       username: payload.username,
-      role: payload.role,
+      role: payload.role
     }
   }
 }

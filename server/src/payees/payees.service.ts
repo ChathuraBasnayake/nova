@@ -1,27 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Payee } from './entities/payee.entity'
 import { CreatePayeeDto } from './dto/create-payee.dto'
+import { Payee } from './entities/payee.entity'
 
 @Injectable()
 export class PayeesService {
   constructor(
     @InjectRepository(Payee)
-    private readonly payeesRepository: Repository<Payee>,
+    private readonly payeesRepository: Repository<Payee>
   ) {}
 
   async findAll(userId: number): Promise<Payee[]> {
     return this.payeesRepository.find({
       where: { userId },
-      order: { name: 'ASC' },
+      order: { name: 'ASC' }
     })
   }
 
   async create(userId: number, dto: CreatePayeeDto): Promise<Payee> {
     // Avoid duplicate payees with same account number for this user
     let payee = await this.payeesRepository.findOne({
-      where: { userId, accountNumber: dto.accountNumber },
+      where: { userId, accountNumber: dto.accountNumber }
     })
 
     if (!payee) {
@@ -29,7 +29,7 @@ export class PayeesService {
         userId,
         name: dto.name,
         accountNumber: dto.accountNumber,
-        bank: dto.bank,
+        bank: dto.bank
       })
       return this.payeesRepository.save(payee)
     }
@@ -39,7 +39,7 @@ export class PayeesService {
 
   async remove(userId: number, id: number): Promise<void> {
     const payee = await this.payeesRepository.findOne({
-      where: { id, userId },
+      where: { id, userId }
     })
 
     if (!payee) {

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context'
 
@@ -25,8 +25,8 @@ export default function AiChat() {
         {
           sender: 'nova',
           text: `Hello ${user?.fullName || 'there'}! I am Nova, your AI personal financial advisor. Ask me anything about your accounts, recent spending, or category budgets.`,
-          timestamp: new Date(),
-        },
+          timestamp: new Date()
+        }
       ])
     }
   }, [isOpen, messages.length, user])
@@ -47,27 +47,36 @@ export default function AiChat() {
 
     const userText = inputVal.trim()
     setInputVal('')
-    setMessages(prev => [...prev, { sender: 'user', text: userText, timestamp: new Date() }])
+    setMessages((prev) => [
+      ...prev,
+      { sender: 'user', text: userText, timestamp: new Date() }
+    ])
     setLoading(true)
 
     try {
-      const res = await apiClient<{ ok: boolean; response: string }>('/ai/chat', {
-        method: 'POST',
-        body: JSON.stringify({ message: userText }),
-      })
+      const res = await apiClient<{ ok: boolean; response: string }>(
+        '/ai/chat',
+        {
+          method: 'POST',
+          body: JSON.stringify({ message: userText })
+        }
+      )
 
       if (res.ok) {
-        setMessages(prev => [...prev, { sender: 'nova', text: res.response, timestamp: new Date() }])
+        setMessages((prev) => [
+          ...prev,
+          { sender: 'nova', text: res.response, timestamp: new Date() }
+        ])
       }
     } catch (err) {
       console.error('Failed to get AI response:', err)
-      setMessages(prev => [
+      setMessages((prev) => [
         ...prev,
         {
           sender: 'nova',
           text: "I'm having trouble connecting to the backend right now. Make sure the API server is running and try again.",
-          timestamp: new Date(),
-        },
+          timestamp: new Date()
+        }
       ])
     } finally {
       setLoading(false)
@@ -102,7 +111,11 @@ export default function AiChat() {
                 <p>AI Financial Advisor</p>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="close-btn" aria-label="close">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="close-btn"
+              aria-label="close"
+            >
               &times;
             </button>
           </header>
@@ -112,11 +125,14 @@ export default function AiChat() {
               <div key={idx} className={`message-wrapper ${m.sender}`}>
                 <div className="message-bubble">{m.text}</div>
                 <span className="message-time">
-                  {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {m.timestamp.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </span>
               </div>
             ))}
-            
+
             {loading && (
               <div className="message-wrapper nova">
                 <div className="message-bubble typing-bubble">
@@ -132,18 +148,27 @@ export default function AiChat() {
           <footer className="chat-footer">
             {messages.length === 1 && !loading && (
               <div className="suggestions-chips">
-                <button onClick={() => handleChipClick('What are my bank balances?')} className="chip">
+                <button
+                  onClick={() => handleChipClick('What are my bank balances?')}
+                  className="chip"
+                >
                   Check Balances
                 </button>
-                <button onClick={() => handleChipClick('Show my category spending')} className="chip">
+                <button
+                  onClick={() => handleChipClick('Show my category spending')}
+                  className="chip"
+                >
                   Spending Summary
                 </button>
-                <button onClick={() => handleChipClick('Did I exceed any budgets?')} className="chip">
+                <button
+                  onClick={() => handleChipClick('Did I exceed any budgets?')}
+                  className="chip"
+                >
                   Budget Check
                 </button>
               </div>
             )}
-            
+
             <form onSubmit={handleSend} className="input-form">
               <input
                 type="text"
@@ -153,7 +178,11 @@ export default function AiChat() {
                 className="chat-input"
                 disabled={loading}
               />
-              <button type="submit" className="send-btn" disabled={loading || !inputVal.trim()}>
+              <button
+                type="submit"
+                className="send-btn"
+                disabled={loading || !inputVal.trim()}
+              >
                 SEND
               </button>
             </form>

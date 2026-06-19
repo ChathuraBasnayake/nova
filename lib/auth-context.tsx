@@ -1,7 +1,7 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import { apiClient } from './api-client'
 
 interface User {
@@ -69,10 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const res = await apiClient<{ token: string; user: User }>('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      })
+      const res = await apiClient<{ token: string; user: User }>(
+        '/auth/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        }
+      )
       localStorage.setItem('session_token', res.token)
       setUser(res.user)
       router.push('/dashboard')
@@ -85,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await apiClient('/auth/register', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       })
       router.push('/login')
     } catch (err) {
@@ -104,7 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   )

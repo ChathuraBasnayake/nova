@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, DataSource } from 'typeorm'
-import { SavingsJar } from './entities/savings-jar.entity'
+import { DataSource, Repository } from 'typeorm'
 import { Account } from '../accounts/entities/account.entity'
-import { Transaction } from '../transactions/entities/transaction.entity'
 import { NotificationsService } from '../notifications/notifications.service'
+import { Transaction } from '../transactions/entities/transaction.entity'
 import { CreateSavingsJarDto, UpdateSavingsJarDto } from './dto/savings-jar.dto'
+import { SavingsJar } from './entities/savings-jar.entity'
 
 @Injectable()
 export class SavingsJarsService {
@@ -15,7 +20,7 @@ export class SavingsJarsService {
     @InjectRepository(Account)
     private readonly accountsRepository: Repository<Account>,
     private readonly notificationsService: NotificationsService,
-    private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
   ) {}
 
   async create(userId: number, dto: CreateSavingsJarDto): Promise<SavingsJar> {
@@ -29,7 +34,7 @@ export class SavingsJarsService {
       targetAmount: dto.targetAmount,
       currentAmount: 0,
       roundUpEnabled: dto.roundUpEnabled ?? false,
-      roundUpRule: dto.roundUpRule ?? 100,
+      roundUpRule: dto.roundUpRule ?? 100
     })
 
     const saved = await this.savingsJarRepository.save(jar)
@@ -44,19 +49,25 @@ export class SavingsJarsService {
   async findAll(userId: number): Promise<SavingsJar[]> {
     return this.savingsJarRepository.find({
       where: { userId },
-      order: { createdAt: 'ASC' },
+      order: { createdAt: 'ASC' }
     })
   }
 
   async findOne(userId: number, id: number): Promise<SavingsJar> {
-    const jar = await this.savingsJarRepository.findOne({ where: { id, userId } })
+    const jar = await this.savingsJarRepository.findOne({
+      where: { id, userId }
+    })
     if (!jar) {
       throw new NotFoundException(`Savings jar with ID ${id} not found.`)
     }
     return jar
   }
 
-  async update(userId: number, id: number, dto: UpdateSavingsJarDto): Promise<SavingsJar> {
+  async update(
+    userId: number,
+    id: number,
+    dto: UpdateSavingsJarDto
+  ): Promise<SavingsJar> {
     const jar = await this.findOne(userId, id)
 
     if (dto.name !== undefined) jar.name = dto.name
@@ -66,7 +77,8 @@ export class SavingsJarsService {
       }
       jar.targetAmount = dto.targetAmount
     }
-    if (dto.roundUpEnabled !== undefined) jar.roundUpEnabled = dto.roundUpEnabled
+    if (dto.roundUpEnabled !== undefined)
+      jar.roundUpEnabled = dto.roundUpEnabled
     if (dto.roundUpRule !== undefined) jar.roundUpRule = dto.roundUpRule
 
     const saved = await this.savingsJarRepository.save(jar)
@@ -78,21 +90,29 @@ export class SavingsJarsService {
     return saved
   }
 
-  async delete(userId: number, id: number, refundAccountNumber: string): Promise<{ ok: boolean; refunded: number }> {
+  async delete(
+    userId: number,
+    id: number,
+    refundAccountNumber: string
+  ): Promise<{ ok: boolean; refunded: number }> {
     const jar = await this.findOne(userId, id)
     const currentBalance = Number(jar.currentAmount)
 
     if (currentBalance > 0) {
       if (!refundAccountNumber) {
-        throw new BadRequestException('Refund account is required to withdraw remaining funds before deletion.')
+        throw new BadRequestException(
+          'Refund account is required to withdraw remaining funds before deletion.'
+        )
       }
 
       // Verify refund account ownership
       const refundAccount = await this.accountsRepository.findOne({
-        where: { accountNumber: refundAccountNumber, userId },
+        where: { accountNumber: refundAccountNumber, userId }
       })
       if (!refundAccount) {
-        throw new ForbiddenException('Refund account not found or does not belong to you.')
+        throw new ForbiddenException(
+          'Refund account not found or does not belong to you.'
+        )
       }
 
       const queryRunner = this.dataSource.createQueryRunner()
@@ -103,14 +123,21 @@ export class SavingsJarsService {
         // Credit the refund account
         await queryRunner.query(
           `UPDATE accounts SET balance = balance + $1 WHERE account_number = $2 AND user_id = $3`,
-          [currentBalance, refundAccountNumber, userId],
+          [currentBalance, refundAccountNumber, userId]
         )
 
         // Record the transaction
         await queryRunner.query(
           `INSERT INTO transactions (from_account, to_account, amount, description, category, created_by)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [`JAR:${jar.id}`, refundAccountNumber, currentBalance, `Refund: Jar Deactivation (${jar.name})`, 'Savings', userId],
+          [
+            `JAR:${jar.id}`,
+            refundAccountNumber,
+            currentBalance,
+            `Refund: Jar Deactivation (${jar.name})`,
+            'Savings',
+            userId
+          ]
         )
 
         await queryRunner.commitTransaction()
@@ -119,7 +146,7 @@ export class SavingsJarsService {
           userId,
           'TRANSFER',
           'Savings Refunded',
-          `Refunded Rs. ${currentBalance.toLocaleString('en-US')} from "${jar.name}" jar to account ${refundAccountNumber} upon jar deactivation.`,
+          `Refunded Rs. ${currentBalance.toLocaleString('en-US')} from "${jar.name}" jar to account ${refundAccountNumber} upon jar deactivation.`
         )
       } catch (err) {
         await queryRunner.rollbackTransaction()
@@ -133,7 +160,12 @@ export class SavingsJarsService {
     return { ok: true, refunded: currentBalance }
   }
 
-  async deposit(userId: number, id: number, fromAccountNumber: string, amount: number): Promise<SavingsJar> {
+  async deposit(
+    userId: number,
+    id: number,
+    fromAccountNumber: string,
+    amount: number
+  ): Promise<SavingsJar> {
     if (amount <= 0) {
       throw new BadRequestException('Deposit amount must be greater than 0.')
     }
@@ -142,10 +174,12 @@ export class SavingsJarsService {
 
     // Verify source account ownership
     const sourceAccount = await this.accountsRepository.findOne({
-      where: { accountNumber: fromAccountNumber, userId },
+      where: { accountNumber: fromAccountNumber, userId }
     })
     if (!sourceAccount) {
-      throw new ForbiddenException('Source account not found or does not belong to you.')
+      throw new ForbiddenException(
+        'Source account not found or does not belong to you.'
+      )
     }
 
     if (Number(sourceAccount.balance) < amount) {
@@ -160,7 +194,7 @@ export class SavingsJarsService {
       // Debit from account with balance check
       const debitResult = await queryRunner.query(
         `UPDATE accounts SET balance = balance - $1 WHERE account_number = $2 AND user_id = $3 AND balance >= $1 RETURNING balance`,
-        [amount, fromAccountNumber, userId],
+        [amount, fromAccountNumber, userId]
       )
 
       if (!debitResult || debitResult.length === 0) {
@@ -170,14 +204,21 @@ export class SavingsJarsService {
       // Credit the jar
       await queryRunner.query(
         `UPDATE savings_jars SET current_amount = current_amount + $1 WHERE id = $2 AND user_id = $3`,
-        [amount, jar.id, userId],
+        [amount, jar.id, userId]
       )
 
       // Record transaction
       await queryRunner.query(
         `INSERT INTO transactions (from_account, to_account, amount, description, category, created_by)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [fromAccountNumber, `JAR:${jar.id}`, amount, `Deposit: ${jar.name}`, 'Savings', userId],
+        [
+          fromAccountNumber,
+          `JAR:${jar.id}`,
+          amount,
+          `Deposit: ${jar.name}`,
+          'Savings',
+          userId
+        ]
       )
 
       await queryRunner.commitTransaction()
@@ -186,7 +227,7 @@ export class SavingsJarsService {
         userId,
         'TRANSFER',
         'Savings Deposit',
-        `Deposited Rs. ${amount.toLocaleString('en-US')} into your "${jar.name}" jar.`,
+        `Deposited Rs. ${amount.toLocaleString('en-US')} into your "${jar.name}" jar.`
       )
     } catch (err) {
       await queryRunner.rollbackTransaction()
@@ -198,7 +239,12 @@ export class SavingsJarsService {
     return this.findOne(userId, id)
   }
 
-  async withdraw(userId: number, id: number, toAccountNumber: string, amount: number): Promise<SavingsJar> {
+  async withdraw(
+    userId: number,
+    id: number,
+    toAccountNumber: string,
+    amount: number
+  ): Promise<SavingsJar> {
     if (amount <= 0) {
       throw new BadRequestException('Withdrawal amount must be greater than 0.')
     }
@@ -212,10 +258,12 @@ export class SavingsJarsService {
 
     // Verify destination account ownership
     const destAccount = await this.accountsRepository.findOne({
-      where: { accountNumber: toAccountNumber, userId },
+      where: { accountNumber: toAccountNumber, userId }
     })
     if (!destAccount) {
-      throw new ForbiddenException('Destination account not found or does not belong to you.')
+      throw new ForbiddenException(
+        'Destination account not found or does not belong to you.'
+      )
     }
 
     const queryRunner = this.dataSource.createQueryRunner()
@@ -226,7 +274,7 @@ export class SavingsJarsService {
       // Debit from jar
       const debitResult = await queryRunner.query(
         `UPDATE savings_jars SET current_amount = current_amount - $1 WHERE id = $2 AND user_id = $3 AND current_amount >= $1 RETURNING current_amount`,
-        [amount, jar.id, userId],
+        [amount, jar.id, userId]
       )
 
       if (!debitResult || debitResult.length === 0) {
@@ -236,14 +284,21 @@ export class SavingsJarsService {
       // Credit to destination account
       await queryRunner.query(
         `UPDATE accounts SET balance = balance + $1 WHERE account_number = $2 AND user_id = $3`,
-        [amount, toAccountNumber, userId],
+        [amount, toAccountNumber, userId]
       )
 
       // Record transaction
       await queryRunner.query(
         `INSERT INTO transactions (from_account, to_account, amount, description, category, created_by)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [`JAR:${jar.id}`, toAccountNumber, amount, `Withdrawal: ${jar.name}`, 'Savings', userId],
+        [
+          `JAR:${jar.id}`,
+          toAccountNumber,
+          amount,
+          `Withdrawal: ${jar.name}`,
+          'Savings',
+          userId
+        ]
       )
 
       await queryRunner.commitTransaction()
@@ -252,7 +307,7 @@ export class SavingsJarsService {
         userId,
         'TRANSFER',
         'Savings Withdrawal',
-        `Withdrew Rs. ${amount.toLocaleString('en-US')} from "${jar.name}" jar to account ${toAccountNumber}.`,
+        `Withdrew Rs. ${amount.toLocaleString('en-US')} from "${jar.name}" jar to account ${toAccountNumber}.`
       )
     } catch (err) {
       await queryRunner.rollbackTransaction()
@@ -267,11 +322,14 @@ export class SavingsJarsService {
   // Active round-up jar helper
   async getActiveRoundUpJar(userId: number): Promise<SavingsJar | null> {
     return this.savingsJarRepository.findOne({
-      where: { userId, roundUpEnabled: true },
+      where: { userId, roundUpEnabled: true }
     })
   }
 
-  private async disableOtherRoundUps(userId: number, activeJarId: number): Promise<void> {
+  private async disableOtherRoundUps(
+    userId: number,
+    activeJarId: number
+  ): Promise<void> {
     await this.savingsJarRepository
       .createQueryBuilder()
       .update(SavingsJar)

@@ -1,5 +1,12 @@
-import { IsNotEmpty, IsString, IsNumber, IsPositive, IsOptional, IsIn } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString
+} from 'class-validator'
 
 export class CreateScheduledTransferDto {
   @ApiProperty({ example: '1234567890' })

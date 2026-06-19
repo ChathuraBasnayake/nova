@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import Sidebar from '@/components/sidebar'
-import { useAuth } from '@/lib/auth-context'
-import { apiClient } from '@/lib/api-client'
+import React, { useEffect, useRef, useState } from 'react'
 import NotificationCenter from '@/components/notification-center'
+import Sidebar from '@/components/sidebar'
+import { apiClient } from '@/lib/api-client'
+import { useAuth } from '@/lib/auth-context'
 
 interface UserProfileResponse {
   ok: boolean
@@ -26,10 +26,13 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [nic, setNic] = useState('')
-  
+
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+  const [message, setMessage] = useState<{
+    text: string
+    type: 'success' | 'error'
+  } | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -66,12 +69,18 @@ export default function ProfilePage() {
     // Client side validation
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      setMessage({ text: 'Only JPEG, PNG, GIF, and WebP images are allowed.', type: 'error' })
+      setMessage({
+        text: 'Only JPEG, PNG, GIF, and WebP images are allowed.',
+        type: 'error'
+      })
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setMessage({ text: 'File is too large. Maximum size is 5MB.', type: 'error' })
+      setMessage({
+        text: 'File is too large. Maximum size is 5MB.',
+        type: 'error'
+      })
       return
     }
 
@@ -82,18 +91,28 @@ export default function ProfilePage() {
     setMessage(null)
 
     try {
-      const res = await apiClient<{ ok: boolean; avatarUrl: string; user: any }>('/users/avatar', {
+      const res = await apiClient<{
+        ok: boolean
+        avatarUrl: string
+        user: any
+      }>('/users/avatar', {
         method: 'POST',
-        body: formData,
+        body: formData
       })
 
       if (res.ok && res.user) {
         updateUser(res.user)
-        setMessage({ text: 'Profile picture updated successfully!', type: 'success' })
+        setMessage({
+          text: 'Profile picture updated successfully!',
+          type: 'success'
+        })
       }
     } catch (err: any) {
       console.error('Failed to upload avatar:', err)
-      setMessage({ text: err?.message || 'Failed to upload profile picture.', type: 'error' })
+      setMessage({
+        text: err?.message || 'Failed to upload profile picture.',
+        type: 'error'
+      })
     } finally {
       setIsUploading(false)
     }
@@ -115,17 +134,23 @@ export default function ProfilePage() {
         body: JSON.stringify({
           fullName,
           email,
-          nic,
-        }),
+          nic
+        })
       })
 
       if (res.ok && res.user) {
         updateUser(res.user)
-        setMessage({ text: 'Profile details saved successfully!', type: 'success' })
+        setMessage({
+          text: 'Profile details saved successfully!',
+          type: 'success'
+        })
       }
     } catch (err: any) {
       console.error('Failed to save profile:', err)
-      setMessage({ text: err?.message || 'Failed to save profile details.', type: 'error' })
+      setMessage({
+        text: err?.message || 'Failed to save profile details.',
+        type: 'error'
+      })
     } finally {
       setIsSaving(false)
     }
@@ -141,7 +166,11 @@ export default function ProfilePage() {
           <h2 className="profile-title">User Profile</h2>
           <div className="profile-header-actions">
             <NotificationCenter />
-            <div className="profile-avatar-top" onClick={handleAvatarClick} style={{ cursor: 'pointer' }}>
+            <div
+              className="profile-avatar-top"
+              onClick={handleAvatarClick}
+              style={{ cursor: 'pointer' }}
+            >
               <img
                 src={user?.avatarUrl || '/person-logo.png'}
                 alt="Profile Avatar"
@@ -190,9 +219,15 @@ export default function ProfilePage() {
               </div>
 
               <div className="profile-summary">
-                <h3 className="profile-user-name">{user?.fullName || 'Nova User'}</h3>
-                <span className="profile-user-role">{user?.role ? user.role.toUpperCase() : 'CUSTOMER'}</span>
-                <p className="profile-user-username">@{user?.username || 'username'}</p>
+                <h3 className="profile-user-name">
+                  {user?.fullName || 'Nova User'}
+                </h3>
+                <span className="profile-user-role">
+                  {user?.role ? user.role.toUpperCase() : 'CUSTOMER'}
+                </span>
+                <p className="profile-user-username">
+                  @{user?.username || 'username'}
+                </p>
               </div>
             </div>
 
@@ -208,7 +243,9 @@ export default function ProfilePage() {
 
               <div className="form-grid">
                 <div className="form-field">
-                  <label htmlFor="username-input">Account Number / Username</label>
+                  <label htmlFor="username-input">
+                    Account Number / Username
+                  </label>
                   <input
                     id="username-input"
                     type="text"
@@ -216,7 +253,9 @@ export default function ProfilePage() {
                     disabled
                     className="form-input-disabled"
                   />
-                  <small className="field-help">This identifier is locked to your account.</small>
+                  <small className="field-help">
+                    This identifier is locked to your account.
+                  </small>
                 </div>
 
                 <div className="form-field">
@@ -245,7 +284,9 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="form-field">
-                  <label htmlFor="nic-input">National Identity Card (NIC)</label>
+                  <label htmlFor="nic-input">
+                    National Identity Card (NIC)
+                  </label>
                   <input
                     id="nic-input"
                     type="text"

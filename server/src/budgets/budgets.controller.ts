@@ -1,7 +1,16 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, ParseIntPipe } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { BudgetsService } from './budgets.service'
 import { CreateBudgetDto } from './dto/create-budget.dto'
 
@@ -23,7 +32,7 @@ export class BudgetsController {
   @ApiOperation({ summary: 'Create or update budget limit for a category' })
   async createOrUpdateBudget(
     @CurrentUser('userId') userId: number,
-    @Body() dto: CreateBudgetDto,
+    @Body() dto: CreateBudgetDto
   ) {
     const data = await this.budgetsService.createOrUpdate(userId, dto)
     return { ok: true, message: 'Budget saved successfully.', data }
@@ -33,7 +42,7 @@ export class BudgetsController {
   @ApiOperation({ summary: 'Delete a category budget' })
   async removeBudget(
     @CurrentUser('userId') userId: number,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number
   ) {
     await this.budgetsService.remove(userId, id)
     return { ok: true, message: 'Budget deleted successfully.' }

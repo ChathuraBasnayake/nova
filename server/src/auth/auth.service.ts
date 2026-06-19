@@ -1,22 +1,20 @@
 import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-  NotFoundException,
   BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
 } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
 import * as bcrypt from 'bcryptjs'
+import { Repository } from 'typeorm'
+import { AccountsService } from '../accounts/accounts.service'
+import { MailService } from '../mail/mail.service'
 import { User } from '../users/entities/user.entity'
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
-import { AccountsService } from '../accounts/accounts.service'
-import { MailService } from '../mail/mail.service'
-
-
 
 const SALT_ROUNDS = 12
 
@@ -27,7 +25,7 @@ export class AuthService {
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
     private accountsService: AccountsService,
-    private mailService: MailService,
+    private mailService: MailService
   ) {}
 
   async login(dto: LoginDto) {
@@ -58,24 +56,28 @@ export class AuthService {
         role: user.role,
         fullName: user.fullName,
         email: user.email,
-        avatarUrl: user.avatarUrl,
-      },
+        avatarUrl: user.avatarUrl
+      }
     }
   }
 
   async register(dto: RegisterDto) {
     // Check username uniqueness
     const existing = await this.usersRepository.findOne({
-      where: { username: dto.username },
+      where: { username: dto.username }
     })
     if (existing) {
       throw new ConflictException('Username already taken.')
     }
 
     // Verify account number is unique in accounts table
-    const accountExists = await this.accountsService.findByAccountNumber(dto.username)
+    const accountExists = await this.accountsService.findByAccountNumber(
+      dto.username
+    )
     if (accountExists) {
-      throw new ConflictException('This account number is already registered in the system.')
+      throw new ConflictException(
+        'This account number is already registered in the system.'
+      )
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS)
@@ -86,17 +88,25 @@ export class AuthService {
       fullName: dto.fullName,
       nic: dto.nic,
       email: dto.email,
-      role: 'customer',
+      role: 'customer'
     })
 
     const saved = await this.usersRepository.save(user)
-    
+
     // Create the default bank account for the user matching the account number
-    await this.accountsService.create(saved.id, saved.username, `${saved.fullName} Savings`)
+    await this.accountsService.create(
+      saved.id,
+      saved.username,
+      `${saved.fullName} Savings`
+    )
 
     // Send Welcome Email
     try {
-      await this.mailService.sendWelcomeEmail(saved.email, saved.fullName, saved.username)
+      await this.mailService.sendWelcomeEmail(
+        saved.email,
+        saved.fullName,
+        saved.username
+      )
     } catch (mailErr) {
       console.error('Failed to send welcome email:', mailErr)
     }
@@ -112,8 +122,8 @@ export class AuthService {
         role: saved.role,
         fullName: saved.fullName,
         email: saved.email,
-        avatarUrl: saved.avatarUrl,
-      },
+        avatarUrl: saved.avatarUrl
+      }
     }
   }
 
@@ -128,12 +138,14 @@ export class AuthService {
       role: user.role,
       fullName: user.fullName,
       email: user.email,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.avatarUrl
     }
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const user = await this.usersRepository.findOne({ where: { email: dto.email } })
+    const user = await this.usersRepository.findOne({
+      where: { email: dto.email }
+    })
     if (!user) {
       throw new NotFoundException('User with this email not found.')
     }
@@ -143,7 +155,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.newPassword, SALT_ROUNDS)
-    
+
     // Update password
     await this.usersRepository.update(user.id, { password: hashedPassword })
 
@@ -156,7 +168,7 @@ export class AuthService {
 
     return {
       ok: true,
-      message: 'Password reset successfully.',
+      message: 'Password reset successfully.'
     }
   }
 
@@ -164,10 +176,8 @@ export class AuthService {
     const payload = {
       sub: user.id,
       username: user.username,
-      role: user.role,
+      role: user.role
     }
     return this.jwtService.sign(payload)
   }
 }
-
-

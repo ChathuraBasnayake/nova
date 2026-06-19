@@ -1,7 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { TransactionsService } from './transactions.service'
 
 @ApiTags('Transactions')
@@ -16,7 +16,7 @@ export class TransactionsController {
   @ApiQuery({ name: 'account', required: true, description: 'Account number' })
   getTransactions(
     @Query('account') account: string,
-    @CurrentUser('userId') userId: number,
+    @CurrentUser('userId') userId: number
   ) {
     return this.transactionsService.findByAccount(account, userId)
   }

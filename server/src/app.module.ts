@@ -1,40 +1,38 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { databaseConfig } from './config/database.config'
-import { SeedService } from './config/seed.service'
-
-// Import entities for Seeding
-import { User } from './users/entities/user.entity'
+import { AccountsModule } from './accounts/accounts.module'
 import { Account } from './accounts/entities/account.entity'
-import { Transaction } from './transactions/entities/transaction.entity'
-import { Budget } from './budgets/entities/budget.entity'
-import { Notification } from './notifications/entities/notification.entity'
-import { Payee } from './payees/entities/payee.entity'
-import { ScheduledTransfer } from './scheduled-transfers/entities/scheduled-transfer.entity'
-import { VirtualCard } from './virtual-cards/entities/virtual-card.entity'
-import { BillSplit } from './bill-splits/entities/bill-split.entity'
-import { SavingsJar } from './savings-jars/entities/savings-jar.entity'
-
+import { AdminModule } from './admin/admin.module'
+import { AiModule } from './ai/ai.module'
 // Import modules
 import { AuthModule } from './auth/auth.module'
-import { UsersModule } from './users/users.module'
-import { AccountsModule } from './accounts/accounts.module'
+import { BillSplitsModule } from './bill-splits/bill-splits.module'
+import { BillSplit } from './bill-splits/entities/bill-split.entity'
+import { BudgetsModule } from './budgets/budgets.module'
+import { Budget } from './budgets/entities/budget.entity'
+import { databaseConfig } from './config/database.config'
+import { SeedService } from './config/seed.service'
+import { HealthModule } from './health/health.module'
+import { InsightsModule } from './insights/insights.module'
+import { MailModule } from './mail/mail.module'
+import { Notification } from './notifications/entities/notification.entity'
+import { NotificationsModule } from './notifications/notifications.module'
+import { Payee } from './payees/entities/payee.entity'
+import { PayeesModule } from './payees/payees.module'
+import { SavingsJar } from './savings-jars/entities/savings-jar.entity'
+import { SavingsJarsModule } from './savings-jars/savings-jars.module'
+import { ScheduledTransfer } from './scheduled-transfers/entities/scheduled-transfer.entity'
+import { ScheduledTransfersModule } from './scheduled-transfers/scheduled-transfers.module'
+import { SearchModule } from './search/search.module'
+import { StatementsModule } from './statements/statements.module'
+import { Transaction } from './transactions/entities/transaction.entity'
 import { TransactionsModule } from './transactions/transactions.module'
 import { TransferModule } from './transfer/transfer.module'
-import { SearchModule } from './search/search.module'
-import { AdminModule } from './admin/admin.module'
-import { HealthModule } from './health/health.module'
-import { BudgetsModule } from './budgets/budgets.module'
-import { InsightsModule } from './insights/insights.module'
-import { AiModule } from './ai/ai.module'
-import { NotificationsModule } from './notifications/notifications.module'
-import { PayeesModule } from './payees/payees.module'
-import { StatementsModule } from './statements/statements.module'
-import { ScheduledTransfersModule } from './scheduled-transfers/scheduled-transfers.module'
-import { MailModule } from './mail/mail.module'
+// Import entities for Seeding
+import { User } from './users/entities/user.entity'
+import { UsersModule } from './users/users.module'
+import { VirtualCard } from './virtual-cards/entities/virtual-card.entity'
 import { VirtualCardsModule } from './virtual-cards/virtual-cards.module'
-import { BillSplitsModule } from './bill-splits/bill-splits.module'
-import { SavingsJarsModule } from './savings-jars/savings-jars.module'
 
 @Module({
   imports: [
@@ -49,7 +47,7 @@ import { SavingsJarsModule } from './savings-jars/savings-jars.module'
       ScheduledTransfer,
       VirtualCard,
       BillSplit,
-      SavingsJar,
+      SavingsJar
     ]),
     AuthModule,
     UsersModule,
@@ -69,8 +67,8 @@ import { SavingsJarsModule } from './savings-jars/savings-jars.module'
     MailModule,
     VirtualCardsModule,
     BillSplitsModule,
-    SavingsJarsModule,
+    SavingsJarsModule
   ],
-  providers: [SeedService],
+  providers: [SeedService]
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator'
 
 export class CreateBudgetDto {
   @ApiProperty({ example: 'Food' })

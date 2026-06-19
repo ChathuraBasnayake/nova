@@ -7,7 +7,7 @@ import { User } from './entities/user.entity'
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private usersRepository: Repository<User>
   ) {}
 
   findById(id: number) {
@@ -20,12 +20,29 @@ export class UsersService {
 
   findAll() {
     return this.usersRepository.find({
-      select: ['id', 'username', 'role', 'fullName', 'nic', 'email', 'avatarUrl', 'createdAt'],
-      order: { id: 'ASC' },
+      select: [
+        'id',
+        'username',
+        'role',
+        'fullName',
+        'nic',
+        'email',
+        'avatarUrl',
+        'createdAt'
+      ],
+      order: { id: 'ASC' }
     })
   }
 
-  async updateProfile(userId: number, data: { fullName?: string; email?: string; nic?: string; avatarUrl?: string }) {
+  async updateProfile(
+    userId: number,
+    data: {
+      fullName?: string
+      email?: string
+      nic?: string
+      avatarUrl?: string
+    }
+  ) {
     await this.usersRepository.update(userId, data)
     return this.findById(userId)
   }

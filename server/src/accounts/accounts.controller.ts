@@ -1,7 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { AccountsService } from './accounts.service'
 import { CreateAccountDto } from './dto/create-account.dto'
 import { UpdateNicknameDto } from './dto/update-nickname.dto'
@@ -23,9 +32,14 @@ export class AccountsController {
   @ApiOperation({ summary: 'Create a new bank account' })
   createAccount(
     @Body() dto: CreateAccountDto,
-    @CurrentUser('userId') userId: number,
+    @CurrentUser('userId') userId: number
   ) {
-    return this.accountsService.create(userId, dto.accountNumber, dto.accountName, dto.pin)
+    return this.accountsService.create(
+      userId,
+      dto.accountNumber,
+      dto.accountName,
+      dto.pin
+    )
   }
 
   @Patch(':accountNumber/nickname')
@@ -33,18 +47,21 @@ export class AccountsController {
   updateNickname(
     @Param('accountNumber') accountNumber: string,
     @Body() dto: UpdateNicknameDto,
-    @CurrentUser('userId') userId: number,
+    @CurrentUser('userId') userId: number
   ) {
-    return this.accountsService.updateNickname(accountNumber, userId, dto.nickname)
+    return this.accountsService.updateNickname(
+      accountNumber,
+      userId,
+      dto.nickname
+    )
   }
 
   @Delete(':accountNumber')
   @ApiOperation({ summary: 'Delete a bank account' })
   removeAccount(
     @Param('accountNumber') accountNumber: string,
-    @CurrentUser('userId') userId: number,
+    @CurrentUser('userId') userId: number
   ) {
     return this.accountsService.remove(accountNumber, userId)
   }
 }
-

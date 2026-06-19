@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { User } from '../users/entities/user.entity'
 import { Account } from '../accounts/entities/account.entity'
-import { AuditLog } from './entities/audit-log.entity'
 import { Transaction } from '../transactions/entities/transaction.entity'
+import { User } from '../users/entities/user.entity'
+import { AuditLog } from './entities/audit-log.entity'
 
 @Injectable()
 export class AdminService {
@@ -16,27 +16,30 @@ export class AdminService {
     @InjectRepository(AuditLog)
     private auditLogsRepository: Repository<AuditLog>,
     @InjectRepository(Transaction)
-    private transactionsRepository: Repository<Transaction>,
+    private transactionsRepository: Repository<Transaction>
   ) {}
 
   async getSystemOverview() {
     const users = await this.usersRepository.find({
-      order: { id: 'ASC' },
+      order: { id: 'ASC' }
     })
 
     const accounts = await this.accountsRepository.find({
-      order: { id: 'ASC' },
+      order: { id: 'ASC' }
     })
 
     const auditLogs = await this.auditLogsRepository.find({
       order: { id: 'DESC' },
-      take: 100,
+      take: 100
     })
 
     // Calculate aggregations
     const totalUsers = users.length
     const totalAccounts = accounts.length
-    const totalDeposits = accounts.reduce((sum, acc) => sum + Number(acc.balance || 0), 0)
+    const totalDeposits = accounts.reduce(
+      (sum, acc) => sum + Number(acc.balance || 0),
+      0
+    )
 
     const totalTransactions = await this.transactionsRepository.count()
     const totalVolumeResult = await this.transactionsRepository
@@ -54,8 +57,8 @@ export class AdminService {
         totalAccounts,
         totalDeposits,
         totalTransactions,
-        totalVolume,
-      },
+        totalVolume
+      }
     }
   }
 
@@ -70,15 +73,21 @@ export class AdminService {
     // Log audit event
     const log = this.auditLogsRepository.create({
       event: 'ADMIN_UPDATE_USER_ROLE',
-      payload: { userId, username: user.username, role },
+      payload: { userId, username: user.username, role }
     })
     await this.auditLogsRepository.save(log)
 
     return user
   }
 
-  async adjustAccountBalance(accountNumber: string, amount: number, action: 'set' | 'deposit' | 'withdraw') {
-    const account = await this.accountsRepository.findOne({ where: { accountNumber } })
+  async adjustAccountBalance(
+    accountNumber: string,
+    amount: number,
+    action: 'set' | 'deposit' | 'withdraw'
+  ) {
+    const account = await this.accountsRepository.findOne({
+      where: { accountNumber }
+    })
     if (!account) {
       throw new Error('Account not found')
     }
@@ -110,8 +119,8 @@ export class AdminService {
         action,
         amount,
         oldBalance,
-        newBalance,
-      },
+        newBalance
+      }
     })
     await this.auditLogsRepository.save(log)
 

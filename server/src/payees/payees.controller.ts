@@ -1,9 +1,18 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, ParseIntPipe } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
-import { PayeesService } from './payees.service'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { CreatePayeeDto } from './dto/create-payee.dto'
+import { PayeesService } from './payees.service'
 
 @ApiTags('Payees')
 @ApiBearerAuth()
@@ -23,7 +32,7 @@ export class PayeesController {
   @ApiOperation({ summary: 'Save a new payee for future transfers' })
   async savePayee(
     @CurrentUser('userId') userId: number,
-    @Body() dto: CreatePayeeDto,
+    @Body() dto: CreatePayeeDto
   ) {
     const data = await this.payeesService.create(userId, dto)
     return { ok: true, message: 'Payee saved successfully.', data }
@@ -33,7 +42,7 @@ export class PayeesController {
   @ApiOperation({ summary: 'Remove a saved payee' })
   async removePayee(
     @CurrentUser('userId') userId: number,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: number
   ) {
     await this.payeesService.remove(userId, id)
     return { ok: true, message: 'Payee removed successfully.' }

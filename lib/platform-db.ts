@@ -1,6 +1,6 @@
-import { Pool } from 'pg'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import { Pool } from 'pg'
 
 const connectionString =
   process.env.DATABASE_URL ||
@@ -114,7 +114,12 @@ export function asText(value: unknown) {
 // ── Safe error handler (no leaks) ──────────────────────────────────
 export function serviceFailure(reason: unknown) {
   const requestId = crypto.randomUUID()
-  const issue = reason as { message?: string; code?: string; detail?: string; stack?: string }
+  const issue = reason as {
+    message?: string
+    code?: string
+    detail?: string
+    stack?: string
+  }
 
   // Log full details server-side only
   console.error(`[service-error][${requestId}]`, {

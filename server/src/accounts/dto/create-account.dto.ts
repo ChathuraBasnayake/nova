@@ -1,5 +1,11 @@
-import { IsString, IsNotEmpty, Length, Matches, IsOptional } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches
+} from 'class-validator'
 
 export class CreateAccountDto {
   @ApiProperty({ example: '1000009999' })

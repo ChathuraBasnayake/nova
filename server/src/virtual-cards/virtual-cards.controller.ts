@@ -1,19 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
-  UseGuards,
   ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
-import { VirtualCardsService } from './virtual-cards.service'
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import { CreateCardDto } from './dto/create-card.dto'
+import { VirtualCardsService } from './virtual-cards.service'
 
 @ApiTags('Virtual Cards')
 @ApiBearerAuth()
@@ -26,23 +26,25 @@ export class VirtualCardsController {
   @ApiOperation({ summary: 'Generate a new virtual debit/credit card' })
   async create(
     @CurrentUser('userId') userId: number,
-    @Body() dto: CreateCardDto,
+    @Body() dto: CreateCardDto
   ) {
     const card = await this.virtualCardsService.create(userId, dto)
     return {
       ok: true,
       message: 'Virtual card generated successfully.',
-      data: card,
+      data: card
     }
   }
 
   @Get()
-  @ApiOperation({ summary: 'Retrieve all virtual cards for the logged-in user' })
+  @ApiOperation({
+    summary: 'Retrieve all virtual cards for the logged-in user'
+  })
   async findAll(@CurrentUser('userId') userId: number) {
     const cards = await this.virtualCardsService.findByUserId(userId)
     return {
       ok: true,
-      data: cards,
+      data: cards
     }
   }
 
@@ -50,13 +52,13 @@ export class VirtualCardsController {
   @ApiOperation({ summary: 'Toggle freeze/unfreeze card status' })
   async toggleFreeze(
     @CurrentUser('userId') userId: number,
-    @Param('id', ParseIntPipe) cardId: number,
+    @Param('id', ParseIntPipe) cardId: number
   ) {
     const card = await this.virtualCardsService.toggleFreeze(userId, cardId)
     return {
       ok: true,
       message: `Card has been ${card.isFrozen ? 'frozen' : 'unfrozen'} successfully.`,
-      data: card,
+      data: card
     }
   }
 
@@ -65,13 +67,17 @@ export class VirtualCardsController {
   async updateLimit(
     @CurrentUser('userId') userId: number,
     @Param('id', ParseIntPipe) cardId: number,
-    @Body('limit') limit: number,
+    @Body('limit') limit: number
   ) {
-    const card = await this.virtualCardsService.updateLimit(userId, cardId, limit)
+    const card = await this.virtualCardsService.updateLimit(
+      userId,
+      cardId,
+      limit
+    )
     return {
       ok: true,
       message: 'Daily spending limit updated successfully.',
-      data: card,
+      data: card
     }
   }
 
@@ -79,12 +85,12 @@ export class VirtualCardsController {
   @ApiOperation({ summary: 'Deactivate and delete virtual card' })
   async remove(
     @CurrentUser('userId') userId: number,
-    @Param('id', ParseIntPipe) cardId: number,
+    @Param('id', ParseIntPipe) cardId: number
   ) {
     await this.virtualCardsService.remove(userId, cardId)
     return {
       ok: true,
-      message: 'Virtual card deactivated and deleted successfully.',
+      message: 'Virtual card deactivated and deleted successfully.'
     }
   }
 }

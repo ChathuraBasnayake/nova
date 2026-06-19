@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n \"next,nest\" -c \"cyan,magenta\" \"npm run dev:fe\" \"npm run dev:be\"",
-    "dev:fe": "next dev --webpack",
-    "dev:be": "npm --prefix server run dev",
+    "dev": "concurrently -n \"next,nest\" -c \"cyan,magenta\" \"bun run dev:fe\" \"bun run dev:be\"",
+    "dev:fe": "PORT=3000 next dev --webpack",
+    "dev:be": "bun run --cwd server dev",
     "build:fe": "next build",
-    "build:be": "npm --prefix server run build",
-    "build": "npm run build:be && npm run build:fe",
+    "build:be": "bun run --cwd server build",
+    "build": "bun run build:be && bun run build:fe",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "postinstall": "npm --prefix server install"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

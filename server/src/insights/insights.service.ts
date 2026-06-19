@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository, Between } from 'typeorm'
+import { Between, In, Repository } from 'typeorm'
 import { Account } from '../accounts/entities/account.entity'
-import { Transaction } from '../transactions/entities/transaction.entity'
 import { Budget } from '../budgets/entities/budget.entity'
+import { Transaction } from '../transactions/entities/transaction.entity'
 
 @Injectable()
 export class InsightsService {
@@ -13,15 +13,15 @@ export class InsightsService {
     @InjectRepository(Transaction)
     private readonly transactionsRepository: Repository<Transaction>,
     @InjectRepository(Budget)
-    private readonly budgetsRepository: Repository<Budget>,
+    private readonly budgetsRepository: Repository<Budget>
   ) {}
 
   private async getUserAccountNumbers(userId: number): Promise<string[]> {
     const accounts = await this.accountsRepository.find({
       where: { userId },
-      select: ['accountNumber'],
+      select: ['accountNumber']
     })
-    return accounts.map(a => a.accountNumber)
+    return accounts.map((a) => a.accountNumber)
   }
 
   async getSpendingSummary(userId: number) {
@@ -40,9 +40,9 @@ export class InsightsService {
     const txs = await this.transactionsRepository.find({
       where: {
         fromAccount: In(accountNumbers),
-        createdAt: Between(startOfMonth, endOfMonth),
+        createdAt: Between(startOfMonth, endOfMonth)
       },
-      select: ['amount', 'category'],
+      select: ['amount', 'category']
     })
 
     const summary: Record<string, number> = {}
@@ -53,7 +53,7 @@ export class InsightsService {
 
     return Object.entries(summary).map(([category, amount]) => ({
       category,
-      amount,
+      amount
     }))
   }
 
@@ -72,9 +72,9 @@ export class InsightsService {
     const txs = await this.transactionsRepository.find({
       where: {
         fromAccount: In(accountNumbers),
-        createdAt: Between(startRange, new Date()),
+        createdAt: Between(startRange, new Date())
       },
-      select: ['amount', 'createdAt'],
+      select: ['amount', 'createdAt']
     })
 
     // Prepare months map
@@ -87,7 +87,9 @@ export class InsightsService {
     }
 
     for (const tx of txs) {
-      const monthKey = new Date(tx.createdAt).toLocaleString('en-US', { month: 'short' })
+      const monthKey = new Date(tx.createdAt).toLocaleString('en-US', {
+        month: 'short'
+      })
       if (monthsMap[monthKey] !== undefined) {
         monthsMap[monthKey] += Number(tx.amount)
       }
@@ -95,26 +97,26 @@ export class InsightsService {
 
     return Object.entries(monthsMap).map(([month, amount]) => ({
       month,
-      amount,
+      amount
     }))
   }
 
   async getBudgetStatus(userId: number) {
     const budgets = await this.budgetsRepository.find({
-      where: { userId },
+      where: { userId }
     })
 
     const actualSpending = await this.getSpendingSummary(userId)
-    const spentMap = new Map(actualSpending.map(s => [s.category, s.amount]))
+    const spentMap = new Map(actualSpending.map((s) => [s.category, s.amount]))
 
-    const result = budgets.map(b => {
+    const result = budgets.map((b) => {
       const spent = spentMap.get(b.category) || 0
       spentMap.delete(b.category) // Remove so we can check remaining unbudgeted spend
       return {
         id: b.id,
         category: b.category,
         limit: Number(b.monthlyLimit),
-        spent,
+        spent
       }
     })
 
@@ -124,7 +126,7 @@ export class InsightsService {
         id: 0,
         category,
         limit: 0,
-        spent,
+        spent
       })
     })
 

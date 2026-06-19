@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import NotificationCenter from '@/components/notification-center'
 import Sidebar from '@/components/sidebar'
 import { apiClient } from '@/lib/api-client'
-import NotificationCenter from '@/components/notification-center'
 import styles from './cards.module.css'
 
 interface Account {
@@ -31,9 +31,11 @@ export default function CardsPage() {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [cards, setCards] = useState<VirtualCard[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   // Flip state (tracks IDs of flipped cards)
-  const [flippedCardIds, setFlippedCardIds] = useState<Record<number, boolean>>({})
+  const [flippedCardIds, setFlippedCardIds] = useState<Record<number, boolean>>(
+    {}
+  )
 
   // Form state
   const [selectedAccountId, setSelectedAccountId] = useState<number | ''>('')
@@ -47,7 +49,7 @@ export default function CardsPage() {
     try {
       const [accountsRes, cardsRes] = await Promise.all([
         apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
-        apiClient<{ ok: boolean; data: VirtualCard[] }>('/virtual-cards'),
+        apiClient<{ ok: boolean; data: VirtualCard[] }>('/virtual-cards')
       ])
 
       if (accountsRes.ok && accountsRes.data) {
@@ -59,7 +61,7 @@ export default function CardsPage() {
 
       if (cardsRes.ok && cardsRes.data) {
         setCards(cardsRes.data)
-        
+
         // Initialize local limits
         const limits: Record<number, number> = {}
         cardsRes.data.forEach((c) => {
@@ -91,8 +93,8 @@ export default function CardsPage() {
         body: JSON.stringify({
           accountId: Number(selectedAccountId),
           cardType,
-          dailyLimit,
-        }),
+          dailyLimit
+        })
       })
       alert('Virtual card generated successfully!')
       fetchData()
@@ -103,10 +105,11 @@ export default function CardsPage() {
 
   const handleToggleFreeze = async (cardId: number) => {
     try {
-      const res = await apiClient<{ ok: boolean; message: string; data: VirtualCard }>(
-        `/virtual-cards/${cardId}/toggle-freeze`,
-        { method: 'PATCH' }
-      )
+      const res = await apiClient<{
+        ok: boolean
+        message: string
+        data: VirtualCard
+      }>(`/virtual-cards/${cardId}/toggle-freeze`, { method: 'PATCH' })
       if (res.ok) {
         setCards((prev) => prev.map((c) => (c.id === cardId ? res.data : c)))
       }
@@ -121,7 +124,7 @@ export default function CardsPage() {
         `/virtual-cards/${cardId}/limit`,
         {
           method: 'PATCH',
-          body: JSON.stringify({ limit }),
+          body: JSON.stringify({ limit })
         }
       )
       if (res.ok) {
@@ -133,7 +136,11 @@ export default function CardsPage() {
   }
 
   const handleDeleteCard = async (cardId: number) => {
-    if (!confirm('Are you sure you want to deactivate and delete this virtual card? This cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to deactivate and delete this virtual card? This cannot be undone.'
+      )
+    ) {
       return
     }
 
@@ -149,7 +156,7 @@ export default function CardsPage() {
   const toggleFlip = (cardId: number) => {
     setFlippedCardIds((prev) => ({
       ...prev,
-      [cardId]: !prev[cardId],
+      [cardId]: !prev[cardId]
     }))
   }
 
@@ -192,25 +199,37 @@ export default function CardsPage() {
               <div className={styles.cardsGrid}>
                 {cards.map((card) => {
                   const isFlipped = !!flippedCardIds[card.id]
-                  const currentLimit = localLimits[card.id] ?? Number(card.dailyLimit)
+                  const currentLimit =
+                    localLimits[card.id] ?? Number(card.dailyLimit)
 
                   return (
                     <div className={styles.cardContainer} key={card.id}>
                       {/* Realistic 3D Flipping Card Wrapper */}
-                      <div className={styles.cardWrapper} onClick={() => toggleFlip(card.id)}>
-                        <div className={`${styles.cardInner} ${isFlipped ? styles.flipped : ''}`}>
-                          
+                      <div
+                        className={styles.cardWrapper}
+                        onClick={() => toggleFlip(card.id)}
+                      >
+                        <div
+                          className={`${styles.cardInner} ${isFlipped ? styles.flipped : ''}`}
+                        >
                           {/* Front of Card */}
-                          <div className={`${styles.cardFront} ${card.cardType === 'debit' ? styles.debitCardFront : styles.creditCardFront}`}>
+                          <div
+                            className={`${styles.cardFront} ${card.cardType === 'debit' ? styles.debitCardFront : styles.creditCardFront}`}
+                          >
                             {card.isFrozen && (
-                              <div className={styles.frozenOverlay} onClick={(e) => e.stopPropagation()}>
+                              <div
+                                className={styles.frozenOverlay}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <div className={styles.frozenText}>
                                   ❄️ FROZEN
                                 </div>
                               </div>
                             )}
                             <div className={styles.cardHeader}>
-                              <span className={styles.cardType}>{card.cardType}</span>
+                              <span className={styles.cardType}>
+                                {card.cardType}
+                              </span>
                               <div className={styles.chip} />
                             </div>
                             <div className={styles.cardNumber}>
@@ -218,12 +237,18 @@ export default function CardsPage() {
                             </div>
                             <div className={styles.cardFooter}>
                               <div>
-                                <div className={styles.cardLabel}>Cardholder</div>
-                                <div className={styles.cardValue}>{card.cardholderName}</div>
+                                <div className={styles.cardLabel}>
+                                  Cardholder
+                                </div>
+                                <div className={styles.cardValue}>
+                                  {card.cardholderName}
+                                </div>
                               </div>
                               <div>
                                 <div className={styles.cardLabel}>Expires</div>
-                                <div className={styles.cardValue}>{card.expiryDate}</div>
+                                <div className={styles.cardValue}>
+                                  {card.expiryDate}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -236,10 +261,10 @@ export default function CardsPage() {
                               <div className={styles.cvvBox}>{card.cvv}</div>
                             </div>
                             <div className={styles.cardInfoBack}>
-                              Authorized Signature • Not Transferable • Nova Bank Customer Care
+                              Authorized Signature • Not Transferable • Nova
+                              Bank Customer Care
                             </div>
                           </div>
-
                         </div>
                       </div>
 
@@ -250,14 +275,24 @@ export default function CardsPage() {
                       {/* Controls below card */}
                       <div className={styles.controls}>
                         <div className={styles.controlRow}>
-                          <span className={styles.controlLabel}>Linked Account</span>
-                          <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>
+                          <span className={styles.controlLabel}>
+                            Linked Account
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.9rem',
+                              color: '#fff',
+                              fontWeight: 500
+                            }}
+                          >
                             {getAccountName(card.accountId)}
                           </span>
                         </div>
 
                         <div className={styles.controlRow}>
-                          <span className={styles.controlLabel}>Freeze Card</span>
+                          <span className={styles.controlLabel}>
+                            Freeze Card
+                          </span>
                           <label className={styles.switch}>
                             <input
                               type="checkbox"
@@ -270,8 +305,16 @@ export default function CardsPage() {
 
                         <div className={styles.limitContainer}>
                           <div className={styles.controlRow}>
-                            <span className={styles.controlLabel}>Daily Limit</span>
-                            <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 600 }}>
+                            <span className={styles.controlLabel}>
+                              Daily Limit
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '0.9rem',
+                                color: '#fff',
+                                fontWeight: 600
+                              }}
+                            >
                               Rs. {currentLimit.toLocaleString()}
                             </span>
                           </div>
@@ -283,10 +326,17 @@ export default function CardsPage() {
                             value={currentLimit}
                             onChange={(e) => {
                               const val = Number(e.target.value)
-                              setLocalLimits((prev) => ({ ...prev, [card.id]: val }))
+                              setLocalLimits((prev) => ({
+                                ...prev,
+                                [card.id]: val
+                              }))
                             }}
-                            onMouseUp={() => handleUpdateLimit(card.id, currentLimit)}
-                            onTouchEnd={() => handleUpdateLimit(card.id, currentLimit)}
+                            onMouseUp={() =>
+                              handleUpdateLimit(card.id, currentLimit)
+                            }
+                            onTouchEnd={() =>
+                              handleUpdateLimit(card.id, currentLimit)
+                            }
                             className={styles.slider}
                           />
                         </div>
@@ -303,7 +353,10 @@ export default function CardsPage() {
                 })}
               </div>
             ) : (
-              <div style={{ color: 'rgba(255,255,255,0.5)' }}>No virtual cards found. Use the panel on the right to generate one.</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)' }}>
+                No virtual cards found. Use the panel on the right to generate
+                one.
+              </div>
             )}
           </div>
 
@@ -319,7 +372,9 @@ export default function CardsPage() {
                   className={styles.select}
                   required
                 >
-                  <option value="" disabled>-- Select account --</option>
+                  <option value="" disabled>
+                    -- Select account --
+                  </option>
                   {accounts.map((acc) => (
                     <option key={acc.id} value={acc.id}>
                       {acc.accountName} ({acc.accountNumber})
@@ -332,7 +387,9 @@ export default function CardsPage() {
                 <label className={styles.formLabel}>Card Type</label>
                 <select
                   value={cardType}
-                  onChange={(e) => setCardType(e.target.value as 'debit' | 'credit')}
+                  onChange={(e) =>
+                    setCardType(e.target.value as 'debit' | 'credit')
+                  }
                   className={styles.select}
                 >
                   <option value="debit">Debit Card</option>
@@ -342,8 +399,12 @@ export default function CardsPage() {
 
               <div className={styles.formGroup}>
                 <div className={styles.controlRow}>
-                  <label className={styles.formLabel}>Daily Spending Limit</label>
-                  <span style={{ fontWeight: 600 }}>Rs. {dailyLimit.toLocaleString()}</span>
+                  <label className={styles.formLabel}>
+                    Daily Spending Limit
+                  </label>
+                  <span style={{ fontWeight: 600 }}>
+                    Rs. {dailyLimit.toLocaleString()}
+                  </span>
                 </div>
                 <input
                   type="range"

@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import React, { useState } from 'react'
 import AuthButton from '@/components/authButton'
 import { apiClient } from '@/lib/api-client'
 
@@ -37,8 +37,8 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({
           email: email.trim(),
           otp: otp.trim(),
-          newPassword: password,
-        }),
+          newPassword: password
+        })
       })
       setSuccess('Password reset successful! Redirecting to login...')
       setTimeout(() => {
@@ -119,7 +119,10 @@ export default function ResetPasswordPage() {
           <AuthButton type="submit" disabled={loading}>
             {loading ? 'RESETTING...' : 'RESET PASSWORD'}
           </AuthButton>
-          <Link href="/login" className="text-sm font-bold text-black hover:underline">
+          <Link
+            href="/login"
+            className="text-sm font-bold text-black hover:underline"
+          >
             Back to Sign In
           </Link>
         </div>

@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Sidebar from '../../components/sidebar'
-import { ChevronRight, Search } from '../../components/Icons'
-import { useAuth } from '@/lib/auth-context'
-import { apiClient } from '@/lib/api-client'
+import React, { useEffect, useState } from 'react'
 import NotificationCenter from '@/components/notification-center'
+import { apiClient } from '@/lib/api-client'
+import { useAuth } from '@/lib/auth-context'
+import { ChevronRight, Search } from '../../components/Icons'
+import Sidebar from '../../components/sidebar'
 
 interface Account {
   id: number
@@ -58,12 +58,14 @@ export default function Dashboard() {
 
     const amount = Number(splitAmount)
     if (isNaN(amount) || amount <= 0 || amount > Number(selectedTx.amount)) {
-      alert(`Invalid split amount. Must be positive and at most Rs. ${Number(selectedTx.amount).toLocaleString()}`)
+      alert(
+        `Invalid split amount. Must be positive and at most Rs. ${Number(selectedTx.amount).toLocaleString()}`
+      )
       return
     }
 
     if (!friendUsername.trim()) {
-      alert('Please enter a friend\'s username.')
+      alert("Please enter a friend's username.")
       return
     }
 
@@ -75,8 +77,8 @@ export default function Dashboard() {
           payerUsername: friendUsername.trim(),
           amount,
           description: splitDescription.trim(),
-          transactionId: selectedTx.id,
-        }),
+          transactionId: selectedTx.id
+        })
       })
       alert('Split bill request sent successfully!')
       setShowSplitModal(false)
@@ -93,7 +95,10 @@ export default function Dashboard() {
       try {
         const [accountsRes, payeesRes] = await Promise.all([
           apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
-          apiClient<{ ok: boolean; data: any[] }>('/payees').catch(() => ({ ok: false, data: [] })),
+          apiClient<{ ok: boolean; data: any[] }>('/payees').catch(() => ({
+            ok: false,
+            data: []
+          }))
         ])
 
         if (accountsRes.ok && accountsRes.data && accountsRes.data.length > 0) {
@@ -134,11 +139,12 @@ export default function Dashboard() {
     fetchTransactions()
   }, [activeAccount])
 
-
   // Cycle to next account on card click
   const handleNextAccount = () => {
     if (accounts.length <= 1 || !activeAccount) return
-    const currentIndex = accounts.findIndex(acc => acc.id === activeAccount.id)
+    const currentIndex = accounts.findIndex(
+      (acc) => acc.id === activeAccount.id
+    )
     const nextIndex = (currentIndex + 1) % accounts.length
     setActiveAccount(accounts[nextIndex])
   }
@@ -158,7 +164,11 @@ export default function Dashboard() {
               LOG OUT
             </button>
             <Link href="/profile">
-              <img src={user?.avatarUrl || '/person-logo.png'} alt="profile" className="avatar" />
+              <img
+                src={user?.avatarUrl || '/person-logo.png'}
+                alt="profile"
+                className="avatar"
+              />
             </Link>
           </div>
         </header>
@@ -167,20 +177,31 @@ export default function Dashboard() {
         <div className="top-section">
           {/* Welcome/Balance Card */}
           <div className="welcome-card">
-            <h2 className="welcome-title">Welcome back, {user?.fullName || 'User'}!</h2>
-            
+            <h2 className="welcome-title">
+              Welcome back, {user?.fullName || 'User'}!
+            </h2>
+
             {loadingAccounts ? (
               <div className="balance-card-loading">Loading accounts...</div>
             ) : activeAccount ? (
-              <div className="balance-card" onClick={handleNextAccount} style={{ cursor: 'pointer' }}>
+              <div
+                className="balance-card"
+                onClick={handleNextAccount}
+                style={{ cursor: 'pointer' }}
+              >
                 <p className="balance-label">{activeAccount.accountName}</p>
                 <p className="balance-amount">
-                  Rs. {Number(activeAccount.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  Rs.{' '}
+                  {Number(activeAccount.balance).toLocaleString('en-US', {
+                    minimumFractionDigits: 2
+                  })}
                 </p>
                 <ChevronRight className="balance-chevron" size={30} />
               </div>
             ) : (
-              <div className="balance-card-empty">No active bank accounts found.</div>
+              <div className="balance-card-empty">
+                No active bank accounts found.
+              </div>
             )}
 
             <div className="carousel-dots">
@@ -211,7 +232,11 @@ export default function Dashboard() {
                   const lastName = parts.slice(1).join(' ') || ''
                   return (
                     <div key={p.id || idx} className="payee-item">
-                      <img src="/person-logo.png" alt="user" className="avatar" />
+                      <img
+                        src="/person-logo.png"
+                        alt="user"
+                        className="avatar"
+                      />
                       <div className="payee-info">
                         <p>{firstName}</p>
                         <p>{lastName}</p>
@@ -248,31 +273,43 @@ export default function Dashboard() {
         {/* Transactions */}
         <div className="transactions-section">
           <h2 className="transactions-title">
-            Recent Transactions {activeAccount ? `(${activeAccount.accountNumber})` : ''}
+            Recent Transactions{' '}
+            {activeAccount ? `(${activeAccount.accountNumber})` : ''}
           </h2>
           <div className="transactions-card">
             {loadingTransactions ? (
               <div className="tx-status-msg">Loading transactions...</div>
             ) : transactions.length > 0 ? (
               transactions.map((t) => {
-                const isDebit = activeAccount && t.fromAccount === activeAccount.accountNumber
+                const isDebit =
+                  activeAccount && t.fromAccount === activeAccount.accountNumber
                 const prefix = isDebit ? '-' : '+'
-                const amountClass = isDebit ? 'transaction-amount debit' : 'transaction-amount credit'
-                const dateStr = new Date(t.createdAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })
+                const amountClass = isDebit
+                  ? 'transaction-amount debit'
+                  : 'transaction-amount credit'
+                const dateStr = new Date(t.createdAt).toLocaleDateString(
+                  'en-US',
+                  {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }
+                )
 
                 return (
                   <div key={t.id} className="transaction-item">
                     <img src="/person-logo.png" alt="user" className="avatar" />
                     <span className="transaction-date">{dateStr}</span>
                     <span className="transaction-account">
-                      {isDebit ? `To: ${t.toAccount}` : `From: ${t.fromAccount}`}
+                      {isDebit
+                        ? `To: ${t.toAccount}`
+                        : `From: ${t.fromAccount}`}
                     </span>
                     <span className={amountClass}>
-                      {prefix}Rs. {Number(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {prefix}Rs.{' '}
+                      {Number(t.amount).toLocaleString('en-US', {
+                        minimumFractionDigits: 2
+                      })}
                     </span>
                     <span className="transaction-status">{t.status}</span>
                     {isDebit && (
@@ -287,7 +324,9 @@ export default function Dashboard() {
                 )
               })
             ) : (
-              <div className="tx-status-msg">No transactions found for this account.</div>
+              <div className="tx-status-msg">
+                No transactions found for this account.
+              </div>
             )}
           </div>
         </div>
@@ -298,10 +337,18 @@ export default function Dashboard() {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Split Bill with a Friend</h3>
             <div className="modal-tx-info">
-              <p><strong>Transaction:</strong> {selectedTx.description || 'Transfer'}</p>
-              <p><strong>Total Amount:</strong> Rs. {Number(selectedTx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p>
+                <strong>Transaction:</strong>{' '}
+                {selectedTx.description || 'Transfer'}
+              </p>
+              <p>
+                <strong>Total Amount:</strong> Rs.{' '}
+                {Number(selectedTx.amount).toLocaleString('en-US', {
+                  minimumFractionDigits: 2
+                })}
+              </p>
             </div>
-            
+
             <form onSubmit={handleSendSplitRequest} className="modal-form">
               <div className="modal-input-group">
                 <label className="modal-label">Friend's Username</label>
@@ -316,9 +363,13 @@ export default function Dashboard() {
               </div>
 
               <div className="modal-input-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
                   <label className="modal-label">Split Amount (Rs.)</label>
-                  <span style={{ fontSize: '0.8rem', color: '#888' }}>Max: Rs. {Number(selectedTx.amount).toLocaleString()}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#888' }}>
+                    Max: Rs. {Number(selectedTx.amount).toLocaleString()}
+                  </span>
                 </div>
                 <input
                   type="number"

@@ -24,7 +24,7 @@ export class SearchService {
        SELECT 'transaction' AS type, id::text, from_account || ' -> ' || to_account AS label, description AS detail FROM transactions
        WHERE description ILIKE $1 AND (created_by = $2 OR from_account IN (SELECT account_number FROM accounts WHERE user_id = $2) OR to_account IN (SELECT account_number FROM accounts WHERE user_id = $2))
        LIMIT 25`,
-      [pattern, userId],
+      [pattern, userId]
     )
 
     return results

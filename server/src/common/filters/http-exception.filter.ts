@@ -1,13 +1,13 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
+  Logger
 } from '@nestjs/common'
-import { Response } from 'express'
 import { randomUUID } from 'crypto'
+import { Response } from 'express'
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -28,7 +28,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse
-      } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+      } else if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null
+      ) {
         const resp = exceptionResponse as Record<string, unknown>
         message = (resp.message as string) || message
 
@@ -47,7 +50,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ok: false,
       message,
       ...(validationErrors ? { errors: validationErrors } : {}),
-      requestId,
+      requestId
     })
   }
 }

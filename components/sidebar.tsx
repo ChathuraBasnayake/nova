@@ -80,10 +80,28 @@ const PiggyBank = ({ size = 18 }: IconProps) => (
     xmlns="http://www.w3.org/2000/svg"
   >
     <circle cx="12" cy="11" r="6" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M12 5V2M10 3h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M18 11h2.5c.8 0 1.5-.7 1.5-1.5s-.7-1.5-1.5-1.5H18" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M6 11H3.5C2.7 11 2 10.3 2 9.5S2.7 8 3.5 8H6" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M9 17v3M15 17v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path
+      d="M12 5V2M10 3h4"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M18 11h2.5c.8 0 1.5-.7 1.5-1.5s-.7-1.5-1.5-1.5H18"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M6 11H3.5C2.7 11 2 10.3 2 9.5S2.7 8 3.5 8H6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M9 17v3M15 17v3"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
     <circle cx="10" cy="10" r="0.75" fill="currentColor" />
   </svg>
 )
@@ -166,9 +184,10 @@ export default function Sidebar() {
     { label: 'E-STATEMENT', path: '/e-statement' }
   ]
 
-  const menuItems = user?.role === 'admin'
-    ? [...baseMenuItems, { label: 'ADMIN PANEL', path: '/admin' }]
-    : baseMenuItems
+  const menuItems =
+    user?.role === 'admin'
+      ? [...baseMenuItems, { label: 'ADMIN PANEL', path: '/admin' }]
+      : baseMenuItems
 
   return (
     <aside className="sidebar">

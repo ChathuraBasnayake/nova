@@ -1,13 +1,14 @@
 import 'reflect-metadata'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
+
 // Load env files (from CWD and server dir fallback)
 dotenv.config()
 dotenv.config({ path: path.join(__dirname, '../.env') })
 
-import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
+import { NestFactory } from '@nestjs/core'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 import { HttpExceptionFilter } from './common/filters/http-exception.filter'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
@@ -18,7 +19,7 @@ async function bootstrap() {
   // CORS — allow frontend origin
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
+    credentials: true
   })
 
   // Global validation pipe — auto-validates DTOs
@@ -27,8 +28,8 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true },
-    }),
+      transformOptions: { enableImplicitConversion: true }
+    })
   )
 
   // Global exception filter — safe error responses

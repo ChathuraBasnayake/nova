@@ -1,11 +1,11 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
 } from 'typeorm'
 import { User } from '../../users/entities/user.entity'
 
@@ -23,7 +23,13 @@ export class SavingsJar {
   @Column({ name: 'target_amount', type: 'numeric', precision: 14, scale: 2 })
   targetAmount: number
 
-  @Column({ name: 'current_amount', type: 'numeric', precision: 14, scale: 2, default: 0 })
+  @Column({
+    name: 'current_amount',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    default: 0
+  })
   currentAmount: number
 
   @Column({ name: 'round_up_enabled', default: false })
