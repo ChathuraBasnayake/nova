@@ -59,127 +59,230 @@ export default function SignUpPage() {
   }
 
   return (
-    <section className="mx-auto min-h-[700px] w-full max-w-[1100px] rounded-[58px] px-8 py-9 lg:min-h-[820px] lg:px-14" style={{ background: 'rgba(18, 11, 32, 0.75)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-      <form
-        onSubmit={handleSubmit}
-        className="relative mx-auto w-full max-w-[860px]"
+    <div className="relative w-full py-8 md:py-12">
+      {/* Background Glowing Orbs */}
+      <div 
+        className="absolute -right-12 -top-12 size-64 rounded-full blur-[100px] pointer-events-none opacity-40 animate-pulse"
+        style={{
+          background: 'radial-gradient(circle, var(--primary) 0%, rgba(157, 78, 221, 0) 70%)',
+          animationDuration: '9s'
+        }}
+      />
+      <div 
+        className="absolute -left-16 -bottom-16 size-80 rounded-full blur-[120px] pointer-events-none opacity-30"
+        style={{
+          background: 'radial-gradient(circle, var(--primary-hover) 0%, rgba(181, 23, 158, 0) 70%)',
+          animation: 'floatOrbSignUp 15s ease-in-out infinite'
+        }}
+      />
+
+      <section 
+        className="mx-auto min-h-[700px] w-full max-w-[960px] rounded-[40px] px-6 py-10 lg:min-h-[800px] lg:px-16" 
+        style={{ 
+          background: 'linear-gradient(135deg, rgba(20, 12, 38, 0.85) 0%, rgba(12, 8, 24, 0.9) 100%)', 
+          backdropFilter: 'blur(30px)', 
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+        }}
       >
-        <img
-          src="/loginlogo.png"
-          alt="Nova Bank"
-          className="absolute left-0 top-0 hidden w-[128px] md:block"
-        />
-
-        <h1 className="mb-12 text-center text-[2.6rem] font-bold text-balance" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          SIGN UP
-        </h1>
-
-        {error && (
-          <div className="mb-6 rounded-lg p-3 text-sm font-semibold text-center" style={{ background: 'rgba(248, 113, 113, 0.15)', color: '#f87171' }}>
-            {error}
+        <form
+          onSubmit={handleSubmit}
+          className="relative mx-auto w-full max-w-[700px]"
+        >
+          {/* Top Logo */}
+          <div className="mb-8 flex flex-col items-center justify-center text-center">
+            <img
+              src="/loginlogo.png"
+              alt="Nova Bank"
+              className="w-full max-w-[160px] drop-shadow-[0_10px_20px_rgba(157,78,221,0.2)]"
+            />
+            <h1 className="mt-6 text-[2.25rem] font-black tracking-tight text-white uppercase" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+              Create Account
+            </h1>
+            <p className="mt-2 text-sm font-medium text-white/50 tracking-wider">
+              Join Nova Bank and experience premium digital finance
+            </p>
           </div>
-        )}
 
-        {success && (
-          <div className="mb-6 rounded-lg p-3 text-sm font-semibold text-center" style={{ background: 'rgba(0, 240, 255, 0.1)', color: '#00f0ff' }}>
-            {success}
-          </div>
-        )}
-
-        <div className="space-y-4">
-          {/* Account Number */}
-          <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label
-              className="text-xl"
-              style={{ color: 'rgba(255,255,255,0.8)' }}
-              htmlFor="signup-account-number"
+          {/* Messages */}
+          {error && (
+            <div 
+              className="mb-6 rounded-2xl p-4 text-sm font-semibold border text-center transition-all duration-300 animate-fadeIn" 
+              style={{ 
+                background: 'rgba(239, 68, 68, 0.08)', 
+                borderColor: 'rgba(239, 68, 68, 0.2)',
+                color: '#fca5a5',
+                boxShadow: '0 4px 15px rgba(239, 68, 68, 0.1)'
+              }}
             >
-              Account Number :
-            </label>
-            <input
-              id="signup-account-number"
-              type="text"
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value)}
-              className="h-[64px] rounded-[40px] px-7 text-lg outline-none"
-              style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#f3f0f7' }}
-            />
-          </div>
+              {error}
+            </div>
+          )}
 
-          {/* Account Name */}
-          <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="signup-account-name">
-              Account Name :
-            </label>
-            <input
-              id="signup-account-name"
-              type="text"
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              className="h-[64px] rounded-[40px] border-0 bg-[#d9d9d9] px-7 text-lg text-black outline-none"
-            />
-          </div>
-
-          {/* Email */}
-          <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="signup-email">
-              Email :
-            </label>
-            <input
-              id="signup-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-[64px] rounded-[40px] border-0 bg-[#d9d9d9] px-7 text-lg text-black outline-none"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="signup-password">
-              Password :
-            </label>
-            <input
-              id="signup-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-[64px] rounded-[40px] border-0 bg-[#d9d9d9] px-7 text-lg text-black outline-none"
-            />
-          </div>
-
-          {/* Confirm Password */}
-          <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label
-              className="text-xl"
-              style={{ color: 'rgba(255,255,255,0.8)' }}
-              htmlFor="signup-confirm-password"
+          {success && (
+            <div 
+              className="mb-6 rounded-2xl p-4 text-sm font-semibold border text-center transition-all duration-300 animate-fadeIn" 
+              style={{ 
+                background: 'rgba(0, 240, 255, 0.08)', 
+                borderColor: 'rgba(0, 240, 255, 0.2)',
+                color: '#a5f3fc',
+                boxShadow: '0 4px 15px rgba(0, 240, 255, 0.1)'
+              }}
             >
-              Confirm Password :
-            </label>
-            <input
-              id="signup-confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="h-[64px] rounded-[40px] border-0 bg-[#d9d9d9] px-7 text-lg text-black outline-none"
-            />
-          </div>
-        </div>
+              {success}
+            </div>
+          )}
 
-        <div className="mt-8 flex flex-col items-center gap-4">
-          <AuthButton type="submit" disabled={loading}>
-            {loading ? 'SAVING...' : 'SIGN UP'}
-          </AuthButton>
-          <Link
-            href="/login"
-            className="text-sm font-bold hover:underline"
-            style={{ color: 'rgba(255,255,255,0.6)' }}
-          >
-            Already have an account? Sign In
-          </Link>
-        </div>
-      </form>
-    </section>
+          {/* Form Fields */}
+          <div className="space-y-5">
+            {/* Account Number */}
+            <div className="grid items-center gap-2 md:grid-cols-[200px_1fr]">
+              <label
+                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6"
+                htmlFor="signup-account-number"
+              >
+                Account Number
+              </label>
+              <input
+                id="signup-account-number"
+                type="text"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="Enter account number"
+                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
+                style={{ 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'rgba(255,255,255,0.04)',
+                }}
+              />
+            </div>
+
+            {/* Account Name */}
+            <div className="grid items-center gap-2 md:grid-cols-[200px_1fr]">
+              <label 
+                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6" 
+                htmlFor="signup-account-name"
+              >
+                Account Name
+              </label>
+              <input
+                id="signup-account-name"
+                type="text"
+                value={accountName}
+                onChange={(e) => setAccountName(e.target.value)}
+                placeholder="Enter full name"
+                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
+                style={{ 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'rgba(255,255,255,0.04)', 
+                }}
+              />
+            </div>
+
+            {/* Email */}
+            <div className="grid items-center gap-2 md:grid-cols-[200px_1fr]">
+              <label 
+                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6" 
+                htmlFor="signup-email"
+              >
+                Email Address
+              </label>
+              <input
+                id="signup-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email address"
+                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
+                style={{ 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'rgba(255,255,255,0.04)',
+                }}
+              />
+            </div>
+
+            {/* Password */}
+            <div className="grid items-center gap-2 md:grid-cols-[200px_1fr]">
+              <label 
+                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6" 
+                htmlFor="signup-password"
+              >
+                Password
+              </label>
+              <input
+                id="signup-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Choose security password"
+                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
+                style={{ 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'rgba(255,255,255,0.04)',
+                }}
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div className="grid items-center gap-2 md:grid-cols-[200px_1fr]">
+              <label
+                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6"
+                htmlFor="signup-confirm-password"
+              >
+                Confirm Password
+              </label>
+              <input
+                id="signup-confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
+                style={{ 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  background: 'rgba(255,255,255,0.04)',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Interactive Styling for Inputs */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            input[id^="signup-"]:focus {
+              border-color: var(--primary) !important;
+              background: rgba(25, 16, 44, 0.8) !important;
+              box-shadow: 0 0 20px -5px rgba(157, 78, 221, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+            }
+          ` }} />
+
+          {/* Action Buttons */}
+          <div className="mt-10 flex flex-col items-center gap-5">
+            <AuthButton type="submit" disabled={loading} className="w-full max-w-[280px]">
+              {loading ? 'SAVING...' : 'SIGN UP'}
+            </AuthButton>
+            
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/45">
+              <span>Already have an account?</span>
+              <Link
+                href="/login"
+                className="font-bold tracking-wide transition-all duration-200 hover:text-white"
+                style={{ color: '#d8b4fe' }}
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      {/* Embedded Animations and Keyframes */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes floatOrbSignUp {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(20px, -20px); }
+        }
+      ` }} />
+    </div>
   )
 }
+
