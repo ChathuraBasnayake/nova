@@ -31,7 +31,7 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="mx-auto flex min-h-[480px] w-full max-w-[1060px] overflow-hidden rounded-[56px] bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] lg:min-h-[660px]">
+    <section className="mx-auto flex min-h-[480px] w-full max-w-[1060px] overflow-hidden rounded-[56px] shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] lg:min-h-[660px]" style={{ background: 'rgba(18, 11, 32, 0.75)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)' }}>
       <aside
         aria-label="Nova Bank shell artwork"
         className="relative hidden w-[46.2%] shrink-0 overflow-hidden bg-[#1d0730] md:block"
@@ -52,17 +52,17 @@ export default function LoginPage() {
         </div>
       </aside>
 
-      <div className="flex flex-1 items-center justify-center bg-white px-8 py-10">
+      <div className="flex flex-1 items-center justify-center px-8 py-10">
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-[450px] text-center"
         >
-          <h1 className="mb-11 text-[2.45rem] font-bold text-black text-balance">
+          <h1 className="mb-11 text-[2.45rem] font-bold text-balance" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             LOGIN
           </h1>
 
           {error && (
-            <div className="mb-6 rounded-lg bg-red-100 p-3 text-sm font-semibold text-red-700">
+            <div className="mb-6 rounded-lg p-3 text-sm font-semibold" style={{ background: 'rgba(248, 113, 113, 0.15)', color: '#f87171' }}>
               {error}
             </div>
           )}
@@ -77,6 +77,7 @@ export default function LoginPage() {
                 alt=""
                 aria-hidden="true"
                 className="-translate-y-1/2 absolute left-8 top-1/2 size-6"
+                style={{ filter: 'brightness(0) invert(0.7)' }}
               />
               <input
                 id="login-account"
@@ -84,7 +85,7 @@ export default function LoginPage() {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="h-[64px] w-full rounded-[40px] border-0 bg-[#d9d9d9] px-8 pl-20 text-lg text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] outline-none transition-shadow placeholder:text-black/45 focus:shadow-[0_4px_4px_0_rgba(0,0,0,0.30),0_8px_12px_6px_rgba(0,0,0,0.15)]"
+                style={{ height: '64px', width: '100%', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', padding: '0 2rem 0 5rem', fontSize: '1.125rem', color: '#f3f0f7', outline: 'none', transition: 'box-shadow 0.2s' }}
               />
             </div>
 
@@ -97,6 +98,7 @@ export default function LoginPage() {
                 alt=""
                 aria-hidden="true"
                 className="-translate-y-1/2 absolute left-8 top-1/2 size-6"
+                style={{ filter: 'brightness(0) invert(0.7)' }}
               />
               <input
                 id="login-password"
@@ -104,7 +106,7 @@ export default function LoginPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-[64px] w-full rounded-[40px] border-0 bg-[#d9d9d9] px-8 pl-20 text-lg text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] outline-none transition-shadow placeholder:text-black/45 focus:shadow-[0_4px_4px_0_rgba(0,0,0,0.30),0_8px_12px_6px_rgba(0,0,0,0.15)]"
+                style={{ height: '64px', width: '100%', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', padding: '0 2rem 0 5rem', fontSize: '1.125rem', color: '#f3f0f7', outline: 'none', transition: 'box-shadow 0.2s' }}
               />
             </div>
           </div>
@@ -112,7 +114,7 @@ export default function LoginPage() {
           <div className="mt-3 text-right">
             <Link
               href="/reset-password"
-              className="text-sm font-bold text-black"
+              style={{ fontSize: '0.875rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}
             >
               Forgot password?
             </Link>
@@ -122,10 +124,10 @@ export default function LoginPage() {
             {loading ? 'LOADING...' : 'SIGN IN'}
           </AuthButton>
 
-          <p className="mt-6 text-sm font-bold text-black">
+          <p className="mt-6 text-sm font-bold" style={{ color: 'rgba(255,255,255,0.6)' }}>
             Don't have an account?
           </p>
-          <Link href="/sign-up" className="text-2xl font-bold text-black">
+          <Link href="/sign-up" className="text-2xl font-bold" style={{ color: '#d8b4fe' }}>
             SIGN UP
           </Link>
         </form>

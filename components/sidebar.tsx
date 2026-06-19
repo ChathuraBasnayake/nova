@@ -227,13 +227,16 @@ export default function Sidebar() {
       <style jsx>{`
         .sidebar {
           width: 250px;
-          background: #450043;
+          background: rgba(13, 8, 24, 0.75);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          border-radius: 0 25px 25px 0;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          border-right: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
           flex-shrink: 0;
+          transition: all 0.3s ease;
         }
 
         .sidebar-top {
@@ -244,31 +247,36 @@ export default function Sidebar() {
         .logo-wrapper {
           display: flex;
           align-items: center;
-          gap: 1rem;
-          padding: 1rem 0.75rem;
+          gap: 0.75rem;
+          padding: 1.5rem 1rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .logo-img {
-          width: 75px;
-          height: 75px;
+          width: 60px;
+          height: 60px;
           border-radius: 50%;
           background: white;
           object-fit: cover;
+          box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
         }
 
         .brand-name {
           color: white;
           font-size: 18px;
-          font-weight: 800;
-          letter-spacing: 0.5px;
+          font-weight: 900;
+          letter-spacing: 1.5px;
+          background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
         .menu {
-          margin-top: 3rem;
-          padding: 0 1rem;
+          margin-top: 2rem;
+          padding: 0 0.75rem;
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 0.5rem;
         }
 
         .menu-link {
@@ -276,101 +284,95 @@ export default function Sidebar() {
         }
 
         .menu-item {
-          height: 50px;
+          height: 46px;
           border: none;
           background: transparent;
-          color: white;
+          color: rgba(255, 255, 255, 0.65);
           text-align: left;
-          padding: 0 1.5rem;
-          border-radius: 25px;
-          transition: all 0.3s;
+          padding: 0 1.25rem;
+          border-radius: 12px;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           font-weight: 600;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           display: flex;
           align-items: center;
           gap: 0.75rem;
           cursor: pointer;
           width: 100%;
-        }
-
-        .menu-item.active {
-          background: #9a5c97;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          border: 1px solid transparent;
         }
 
         .menu-item:hover {
-          background: #9a5c97;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          color: white;
+          transform: translateX(4px);
+        }
+
+        .menu-item.active {
+          background: linear-gradient(135deg, rgba(157, 78, 221, 0.2) 0%, rgba(181, 23, 158, 0.1) 100%);
+          border-color: rgba(157, 78, 221, 0.25);
+          color: white;
+          box-shadow: 0 4px 15px rgba(157, 78, 221, 0.15);
+          font-weight: 700;
         }
 
         .sidebar-footer {
           display: flex;
           gap: 1.5rem;
           padding: 1.5rem;
+          color: rgba(255, 255, 255, 0.6);
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar-footer :global(svg) {
+          cursor: pointer;
+          transition: color 0.2s, transform 0.2s;
+        }
+        
+        .sidebar-footer :global(svg:hover) {
           color: white;
+          transform: scale(1.1);
         }
 
         @media (max-width: 768px) {
           .sidebar {
             width: 100%;
-            border-radius: 0 0 25px 25px;
             flex-direction: row;
-            flex-wrap: wrap;
-            padding: 0.75rem 1rem;
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem 1rem;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
           }
 
           .sidebar-top {
             flex-direction: row;
             align-items: center;
-            gap: 1rem;
-            flex: 1;
+            justify-content: space-between;
+            width: 100%;
           }
 
           .logo-wrapper {
             padding: 0;
+            border-bottom: none;
           }
           .logo-img {
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
           }
           .brand-name {
-            font-size: 16px;
+            font-size: 15px;
           }
 
           .menu {
-            flex-direction: row;
-            flex-wrap: wrap;
-            margin-top: 0;
-            padding: 0;
-            gap: 0.5rem;
+            display: none; /* Hide standard sidebar links on mobile in favor of bottom-bar navigation (optional, let's keep it overflow-x scroll) */
           }
-          .menu-item {
-            padding: 0 1rem;
-            height: 40px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            width: auto;
-          }
-
+          
           .sidebar-footer {
+            border-top: none;
             padding: 0;
-            gap: 1rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .menu-item {
-            font-size: 0.7rem;
-            padding: 0 0.75rem;
-            height: 34px;
-          }
-          .brand-name {
-            font-size: 14px;
-          }
-          .logo-img {
-            width: 40px;
-            height: 40px;
           }
         }
       `}</style>

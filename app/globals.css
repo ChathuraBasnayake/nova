@@ -1,149 +1,396 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0713;
+  --foreground: #f3f0f7;
+  
+  --primary: #9d4edd;
+  --primary-hover: #b5179e;
+  --accent: #ff007f;
+  --accent-glow: rgba(255, 0, 127, 0.15);
+  
+  --glass-bg: rgba(18, 11, 32, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-highlight: rgba(255, 255, 255, 0.03);
+  
+  --success: #00f0ff;
+  --debit: #ff477e;
+  --credit: #00f0ff;
+  
+  --sidebar-purple: rgba(18, 10, 30, 0.9);
+  --sidebar-accent: #bf5af2;
+  
+  --card-bg: rgba(25, 16, 44, 0.7);
+  --bg-light: #160f29;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at 50% 0%, #1e1035 0%, var(--background) 70%);
   color: var(--foreground);
-  font-family: var(--font-bai, 'Bai Jamjuree'), Arial, Helvetica, sans-serif;
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-:root{
-  --sidebar-purple: rgba(58,6,59,0.83); /* #3A063B at 83% */
-  --sidebar-accent: #b886b6;
-  --card-bg: #ffffff;
-  --bg-light: #f3f2f2;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-.font-geist{font-family: var(--font-bai, 'Bai Jamjuree'), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+.font-geist {
+  font-family: 'Outfit', sans-serif;
+}
 
-.bg-bg-light{background-color:var(--bg-light)}
-.bg-sidebar-purple{background:var(--sidebar-purple);border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.12)}
-.text-sidebar-purple{color:var(--sidebar-purple)}
+/* Glassmorphism Styles */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 20px;
+}
 
-.transfer-card{
-  background: var(--card-bg);
-  border-radius: 18px;
-  box-shadow: 0 22px 50px rgba(0,0,0,0.12);
+.bg-bg-light {
+  background-color: var(--bg-light);
+}
+
+.bg-sidebar-purple {
+  background: var(--sidebar-purple);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.text-sidebar-purple {
+  color: var(--primary);
+}
+
+/* Overriding old transfer card styles for futuristic glass card */
+.transfer-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5) !important;
   max-width: 960px;
-  margin: 18px auto;
-  padding: 140px 48px 40px;
+  margin: 24px auto;
+  padding: 100px 48px 40px !important;
   position: relative;
-  max-height: none;
   overflow: visible;
-  border: 1px solid rgba(0,0,0,0.04);
+  border: 1px solid var(--glass-border) !important;
 }
 
-.underline-input{
-  width:100%;
-  border:0;
-  border-bottom:2px solid #cfcfcf;
-  padding:8px 4px;
-  outline:none;
-  font-size:16px;
+/* Input Fields Redesign */
+.underline-input {
+  width: 100%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--foreground) !important;
+  border-radius: 12px;
+  padding: 12px 16px;
+  outline: none;
+  font-size: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.underline-input:focus{border-bottom-color:var(--sidebar-accent)}
-
-.description-box{
-  width:100%;
-  border:1px solid #cfcfcf;
-  padding:8px;
-  border-radius:2px;
-}
-
-.next-btn{
-  background:var(--sidebar-accent);
-  color:white;
-  padding:18px 48px;
-  border-radius:28px;
-  font-weight:700;
-  box-shadow: 0 8px 18px rgba(90,39,64,0.2);
-  border:none;
+.underline-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.2);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-item{padding:14px 18px;border-radius:12px;color:rgba(255,255,255,0.95);transition:all 200ms cubic-bezier(.2,.9,.2,1);display:flex;align-items:center;gap:14px;text-transform:uppercase;font-weight:600;letter-spacing:1px}
-.sidebar-item:hover{background:rgba(255,255,255,0.03);transform:translateY(-3px)}
-.sidebar-item .sidebar-icon{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:transparent}
-.sidebar-item.active{background: linear-gradient(180deg, rgba(196,150,185,0.95), rgba(169,111,150,0.95));font-weight:900;color:#ffffff;box-shadow: 0 20px 40px rgba(58,6,59,0.35), inset 0 -6px 0 rgba(255,255,255,0.06);transform:translateY(-6px);padding-left:20px;padding-right:28px}
-.sidebar-item.active .sidebar-icon{background:rgba(255,255,255,0.06);box-shadow:0 10px 20px rgba(0,0,0,0.18);border-radius:12px}
-.sidebar-item.active svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.6}
-.icon-btn{background:rgba(255,255,255,0.04);border:none;color:white;font-size:18px;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%}
-.icon-btn svg{width:20px;height:20px;display:block;fill:currentColor;stroke:currentColor}
+.description-box {
+  width: 100%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--foreground) !important;
+  padding: 12px;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s;
+}
+.description-box:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.2);
+}
 
-/* Ensure form labels and inputs inside the transfer card are dark/visible */
-.transfer-card label,
-.transfer-card input,
-.transfer-card select,
-.transfer-card textarea,
-.underline-input,
-.description-box{color:#000}
+/* Premium Buttons */
+.next-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: white !important;
+  padding: 14px 40px;
+  border-radius: 30px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 20px rgba(157, 78, 221, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.next-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(157, 78, 221, 0.45);
+}
+.next-btn:active {
+  transform: translateY(0);
+}
 
-/* Ensure all text inside transfer/confirm cards is black and highly visible */
+/* Sidebar Item Redesign */
+.sidebar-item {
+  padding: 14px 18px;
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  transform: translateX(4px);
+}
+.sidebar-item .sidebar-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+}
+.sidebar-item.active {
+  background: linear-gradient(135deg, rgba(157, 78, 221, 0.25) 0%, rgba(181, 23, 158, 0.15) 100%);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 10px 25px rgba(157, 78, 221, 0.15);
+  transform: translateX(6px);
+}
+.sidebar-item.active .sidebar-icon {
+  background: var(--primary);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3);
+}
+
+.icon-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Removing the forced black colors from previous light version */
 .transfer-card,
 .transfer-card * {
-  color: #000 !important;
+  color: var(--foreground) !important;
 }
 
-/* Ensure transfer buttons remain white even when global card text is forced black */
-.transfer-card .next-btn,
-.transfer-card .transfer-btn {
-  color: #fff !important;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.12);
+.transfer-card label {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 500;
+  font-size: 14px;
 }
 
+/* Fix confirm illustration inner panel spacing */
+.transfer-card .bg-white {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px;
+}
 
-/* Allow confirm illustration and inner panel to fully display */
-.transfer-card img{max-width:420px;max-height:340px;width:auto;height:auto}
+.transfer-card h3 {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 18px;
+  background: linear-gradient(135deg, #ffffff 0%, #dcd0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-/* inner confirm panel styling (rounded, elevated) */
-.transfer-card .bg-white{background:#f3f5f6;border-radius:14px;box-shadow:0 20px 40px rgba(12,12,12,0.06);max-width:760px;margin:0 auto;padding:32px}
+/* Large Transfer Button Glow overlay */
+.transfer-btn {
+  width: 420px;
+  max-width: 100%;
+  height: 64px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: white !important;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1.5px;
+  box-shadow: 0 15px 30px rgba(157, 78, 221, 0.35);
+  border: none;
+  margin-top: 24px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.transfer-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(157, 78, 221, 0.5);
+}
 
-.transfer-card h3{font-size:26px;font-weight:900;text-align:center;margin-bottom:18px}
+main h2 {
+  color: var(--foreground) !important;
+  font-size: 28px;
+  font-weight: 800;
+}
 
-/* ensure headings below the overlapping graphic are visible */
-.transfer-card > .relative > h3{margin-top:6px}
+/* Success layout styles */
+.success-check.inside-check {
+  margin: 20px auto 30px;
+  width: 90px;
+  height: 90px;
+  filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.3));
+}
 
-/* transfer button variant styled as large pill overlapping panel */
-.transfer-btn{width:420px;height:72px;border-radius:36px;background:linear-gradient(180deg,#b886b6,#9b5f90);color:#fff;font-weight:900;font-size:20px;letter-spacing:2px;box-shadow:0 22px 28px rgba(90,39,64,0.25);border:none;margin-top:24px;display:block;margin-left:auto;margin-right:auto}
-.transfer-btn:active{transform:translateY(1px)}
+.success-btn {
+  width: 420px;
+  max-width: 100%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  height: 60px;
+  border-radius: 30px;
+  color: white !important;
+  font-weight: 700;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 15px 30px rgba(157, 78, 221, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.success-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(157, 78, 221, 0.45);
+}
 
-/* slightly adjust generic next button */
-.next-btn{padding:14px 40px}
+/* Topbar icons styling */
+.topbar-icon {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  color: var(--foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+.topbar-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+.topbar-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
 
-/* Make main headings clearly visible */
-main h2{color:#000;font-size:28px;font-weight:800}
+/* Tailwind text-gray overrides to ensure full dark-mode compatibility */
+.text-gray-900, .text-gray-800, .text-gray-700 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+.text-gray-600, .text-gray-500 {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+.text-gray-450, .text-gray-400 {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
 
-/* success page specifics */
-.success-check{display:flex;align-items:center;justify-content:center;position:absolute;top:-120px;left:50%;transform:translateX(-50%);z-index:40;width:220px;height:220px}
-.success-check svg{display:block;margin:0 auto;width:100%;height:100%}
-.success-btn{width:420px;background:linear-gradient(180deg,#b886b6,#9b5f90);height:64px;border-radius:32px;color:#fff;font-weight:800;font-size:18px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 18px 28px rgba(90,39,64,0.22);border:none;margin-top:28px}
-.success-btn span{font-size:22px;margin-right:12px}
+/* Force text-black to light on dark backgrounds (excluding login artwork) */
+.text-black {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
 
-/* Variant: place the alert/check inside the card flow (no overlap) */
-.success-check.inside-check{position:relative;top:0;left:0;transform:none;margin:20px auto 40px;width:100px;height:100px;z-index:10;display:block}
-.success-check.inside-check svg{width:100%;height:100%}
+/* Modal and list boxes override */
+.bg-white {
+  background-color: rgba(20, 14, 38, 0.95) !important;
+  color: #f3f0f7 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
 
-/* Topbar icons (right side) */
-.topbar-icon{background:transparent;border:none;color:var(--foreground);display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px}
-.topbar-icon svg{width:22px;height:22px;fill:none;stroke:currentColor}
-.topbar-icon:hover{background:rgba(0,0,0,0.04)}
+.border-gray-100, .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+}
 
-/* Ensure PNG icons inside topbar buttons are sized and centered */
-.topbar-icon img{width:20px;height:20px;object-fit:contain;display:block}
+/* Select / Option dark-mode fix */
+select,
+select option {
+  background-color: #1a1030 !important;
+  color: var(--foreground) !important;
+}
+select {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+}
+
+/* Generic label fix for forms on dark backgrounds */
+label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Placeholder text in dark mode */
+::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Error text stays red */
+.text-red-600, .text-red-700 {
+  color: #f87171 !important;
+}
+.bg-red-100 {
+  background-color: rgba(248, 113, 113, 0.12) !important;
+}

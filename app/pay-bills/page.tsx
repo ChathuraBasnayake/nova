@@ -333,7 +333,7 @@ export default function PayBillsPage() {
                         cursor: 'pointer',
                         userSelect: 'none',
                         fontSize: '0.9rem',
-                        color: '#555',
+                        color: 'rgba(255,255,255,0.7)',
                         fontWeight: 600
                       }}
                     >
@@ -355,12 +355,12 @@ export default function PayBillsPage() {
                       }}
                       className="underline-select"
                       style={{
-                        background: '#f3f4f6',
-                        border: '1.5px solid transparent',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '12px',
                         padding: '0.85rem 1.1rem',
                         fontSize: '0.95rem',
-                        color: '#333',
+                        color: '#f3f0f7',
                         outline: 'none'
                       }}
                     >
@@ -397,12 +397,12 @@ export default function PayBillsPage() {
                       }}
                       className="underline-select"
                       style={{
-                        background: '#f3f4f6',
-                        border: '1.5px solid transparent',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '12px',
                         padding: '0.85rem 1.1rem',
                         fontSize: '0.95rem',
-                        color: '#333',
+                        color: '#f3f0f7',
                         outline: 'none'
                       }}
                     >
@@ -520,7 +520,7 @@ export default function PayBillsPage() {
         .page {
           display: flex;
           min-height: 100vh;
-          background: #f3f4f6;
+          background: var(--background);
         }
         .content {
           flex: 1;
@@ -531,20 +531,21 @@ export default function PayBillsPage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: white;
+          background: var(--glass-bg);
           padding: 1.1rem 2.5rem;
-          border-bottom: 1px solid #eee;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          backdrop-filter: blur(16px);
         }
         .topbar h1 {
           font-size: 1.25rem;
           font-weight: 600;
-          color: #333;
+          color: var(--foreground);
         }
         .topbar-icons {
           display: flex;
           align-items: center;
           gap: 1.5rem;
-          color: #666;
+          color: rgba(255,255,255,0.6);
         }
         .avatar {
           width: 36px;
@@ -566,9 +567,11 @@ export default function PayBillsPage() {
           max-width: 760px;
         }
         .card {
-          background: white;
+          background: var(--glass-bg);
+          backdrop-filter: blur(16px);
           border-radius: 24px;
-          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(255,255,255,0.08);
           padding: 3rem;
         }
         .biller-grid {
@@ -599,8 +602,8 @@ export default function PayBillsPage() {
           height: 48px;
         }
         .logo-circle {
-          background: white;
-          border: 1px solid #eee;
+          background: rgba(255,255,255,0.9);
+          border: 1px solid rgba(255,255,255,0.15);
         }
         .biller-btn:hover .biller-icon {
           transform: scale(1.07);
@@ -608,7 +611,7 @@ export default function PayBillsPage() {
         }
         .biller-name {
           font-size: 0.82rem;
-          color: #555;
+          color: rgba(255,255,255,0.7);
           text-align: center;
           line-height: 1.25;
           font-weight: 500;
@@ -619,14 +622,14 @@ export default function PayBillsPage() {
           gap: 0.25rem;
           background: none;
           border: none;
-          color: #888;
+          color: rgba(255,255,255,0.5);
           font-size: 0.9rem;
           cursor: pointer;
           margin-bottom: 1.75rem;
           padding: 0;
         }
         .back-btn:hover {
-          color: #555;
+          color: rgba(255,255,255,0.8);
         }
         .biller-header {
           display: flex;
@@ -637,7 +640,7 @@ export default function PayBillsPage() {
         .biller-header-name {
           font-weight: 600;
           font-size: 1.05rem;
-          color: #333;
+          color: var(--foreground);
         }
         .field {
           display: flex;
@@ -647,25 +650,26 @@ export default function PayBillsPage() {
         }
         .field label {
           font-size: 0.9rem;
-          color: #666;
+          color: rgba(255,255,255,0.7);
           font-weight: 500;
         }
         .field input {
-          background: #f3f4f6;
-          border: 1.5px solid transparent;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
           border-radius: 12px;
           padding: 0.85rem 1.1rem;
           font-size: 0.95rem;
-          color: #333;
+          color: var(--foreground);
           outline: none;
           transition: box-shadow 0.15s, border-color 0.15s;
         }
         .field input:focus {
-          box-shadow: 0 0 0 2px #d8b9d6;
+          box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.3);
+          border-color: var(--primary);
         }
         .field input.input-error {
-          border-color: #ef4444;
-          background: #fef2f2;
+          border-color: #f87171;
+          background: rgba(248, 113, 113, 0.08);
         }
         .error-text {
           font-size: 0.78rem;
@@ -675,18 +679,20 @@ export default function PayBillsPage() {
         .pay-now-btn {
           margin-top: 1.75rem;
           width: 100%;
-          background: #9a5c97;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
           color: white;
-          font-weight: 600;
+          font-weight: 700;
           font-size: 1rem;
           padding: 1rem;
           border: none;
           border-radius: 999px;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.3s;
+          box-shadow: 0 8px 20px rgba(157, 78, 221, 0.3);
         }
         .pay-now-btn:hover {
-          background: #450043;
+          transform: translateY(-2px);
+          box-shadow: 0 12px 28px rgba(157, 78, 221, 0.45);
         }
         .status-card {
           display: flex;
@@ -705,22 +711,22 @@ export default function PayBillsPage() {
           margin-bottom: 1.75rem;
         }
         .status-circle.success {
-          background: #dcfce7;
-          color: #22c55e;
+          background: rgba(0, 240, 255, 0.1);
+          color: var(--success);
         }
         .status-circle.failed {
-          background: #fee2e2;
-          color: #ef4444;
+          background: rgba(248, 113, 113, 0.1);
+          color: #f87171;
         }
         .status-card h2 {
           font-size: 1.4rem;
           font-weight: 600;
-          color: #333;
+          color: var(--foreground);
           margin-bottom: 0.6rem;
         }
         .status-sub {
           font-size: 0.9rem;
-          color: #999;
+          color: rgba(255,255,255,0.5);
           margin-bottom: 2.25rem;
           white-space: pre-line;
         }
@@ -728,7 +734,7 @@ export default function PayBillsPage() {
           display: flex;
           align-items: center;
           gap: 0.4rem;
-          background: #9a5c97;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
           color: white;
           font-weight: 600;
           font-size: 0.9rem;
@@ -736,10 +742,12 @@ export default function PayBillsPage() {
           border: none;
           border-radius: 999px;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.3s;
+          box-shadow: 0 8px 20px rgba(157, 78, 221, 0.3);
         }
         .back-home-btn:hover {
-          background: #450043;
+          transform: translateY(-2px);
+          box-shadow: 0 12px 24px rgba(157, 78, 221, 0.45);
         }
       `}</style>
     </div>

@@ -188,7 +188,7 @@ export default function EStatementPage() {
       <div className="flex min-h-screen">
         <Sidebar />
 
-        <main className="flex-1 p-12 text-black">
+        <main className="flex-1 p-12">
           <div className="mb-10 flex items-center justify-between">
             <h2 className="text-2xl font-semibold">E-Statement</h2>
             <div className="flex items-center gap-3">
@@ -209,7 +209,7 @@ export default function EStatementPage() {
             </div>
           </div>
 
-          <div className="rounded-[32px] bg-white px-10 py-8 text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] mb-6">
+          <div className="rounded-[32px] px-10 py-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] mb-6" style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--foreground)' }}>
             <div className="grid items-center gap-6 text-xl md:grid-cols-[auto_1fr]">
               <label htmlFor="statement-account-select">
                 Select Bank Account:
@@ -221,7 +221,7 @@ export default function EStatementPage() {
                   id="statement-account-select"
                   value={selectedAccount?.accountNumber || ''}
                   onChange={handleAccountChange}
-                  className="min-w-0 border-0 border-b border-black bg-transparent px-2 py-1 text-xl text-black outline-none"
+                  className="min-w-0 border-0 border-b border-white/20 bg-transparent px-2 py-1 text-xl outline-none" style={{ color: 'var(--foreground)' }}
                 >
                   {accounts.map((acc) => (
                     <option key={acc.id} value={acc.accountNumber}>
@@ -239,7 +239,7 @@ export default function EStatementPage() {
 
           <section
             aria-label="Bank statement preview"
-            className="mt-6 min-h-[560px] bg-[#e7e7e7] px-7 py-9 text-black rounded-[32px]"
+            className="mt-6 min-h-[560px] px-7 py-9 rounded-[32px]" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--foreground)' }}
           >
             <div className="max-w-full">
               <div className="flex justify-between items-center mb-6">

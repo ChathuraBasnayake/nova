@@ -52,20 +52,20 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <section className="mx-auto flex min-h-[500px] w-full max-w-[1100px] items-center justify-center rounded-[58px] bg-white px-8 py-10 shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] lg:min-h-[684px]">
+    <section className="mx-auto flex min-h-[500px] w-full max-w-[1100px] items-center justify-center rounded-[58px] px-8 py-10 lg:min-h-[684px]" style={{ background: 'rgba(18, 11, 32, 0.75)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
       <form onSubmit={handleSubmit} className="w-full max-w-[670px]">
-        <h1 className="mb-16 text-center text-[2.6rem] font-bold text-black text-balance">
+        <h1 className="mb-16 text-center text-[2.6rem] font-bold text-balance" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           RESET PASSWORD
         </h1>
 
         {error && (
-          <div className="mb-6 rounded-lg bg-red-100 p-3 text-sm font-semibold text-red-700 text-center">
+          <div className="mb-6 rounded-lg p-3 text-sm font-semibold text-center" style={{ background: 'rgba(248, 113, 113, 0.15)', color: '#f87171' }}>
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-lg bg-green-100 p-3 text-sm font-semibold text-green-700 text-center">
+          <div className="mb-6 rounded-lg p-3 text-sm font-semibold text-center" style={{ background: 'rgba(0, 240, 255, 0.1)', color: '#00f0ff' }}>
             {success}
           </div>
         )}
@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
         <div className="space-y-8">
           {/* Email */}
           <div className="grid items-center gap-4 md:grid-cols-[120px_1fr]">
-            <label className="text-xl text-black" htmlFor="reset-email">
+            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="reset-email">
               Email:
             </label>
             <input
@@ -81,13 +81,14 @@ export default function ResetPasswordPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-[64px] rounded-[40px] border-0 bg-[#d9d9d9] px-7 text-lg text-black outline-none"
+              className="h-[64px] rounded-[40px] px-7 text-lg outline-none"
+              style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#f3f0f7' }}
             />
           </div>
 
           {/* OTP */}
           <div className="grid items-center gap-4 md:grid-cols-[120px_250px]">
-            <label className="text-xl text-black" htmlFor="reset-otp">
+            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="reset-otp">
               OTP:
             </label>
             <input
@@ -102,7 +103,7 @@ export default function ResetPasswordPage() {
 
           {/* New Password */}
           <div className="grid items-center gap-4 md:grid-cols-[120px_250px]">
-            <label className="text-xl text-black" htmlFor="reset-password">
+            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="reset-password">
               New Password:
             </label>
             <input
@@ -121,7 +122,8 @@ export default function ResetPasswordPage() {
           </AuthButton>
           <Link
             href="/login"
-            className="text-sm font-bold text-black hover:underline"
+            className="text-sm font-bold hover:underline"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
           >
             Back to Sign In
           </Link>

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Bai_Jamjuree, Geist, Geist_Mono } from 'next/font/google'
+import { Outfit, Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import AiChat from '@/components/ai-chat'
 import { AuthProvider } from '@/lib/auth-context'
@@ -14,9 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ['latin']
 })
 
-const bai = Bai_Jamjuree({
-  variable: '--font-bai',
-  weight: ['200', '300', '400', '500', '600', '700'],
+const outfit = Outfit({
+  variable: '--font-outfit',
   subsets: ['latin']
 })
 
@@ -33,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${bai.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>

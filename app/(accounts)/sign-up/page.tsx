@@ -59,7 +59,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <section className="mx-auto min-h-[700px] w-full max-w-[1100px] rounded-[58px] bg-white px-8 py-9 shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] lg:min-h-[820px] lg:px-14">
+    <section className="mx-auto min-h-[700px] w-full max-w-[1100px] rounded-[58px] px-8 py-9 lg:min-h-[820px] lg:px-14" style={{ background: 'rgba(18, 11, 32, 0.75)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
       <form
         onSubmit={handleSubmit}
         className="relative mx-auto w-full max-w-[860px]"
@@ -70,18 +70,18 @@ export default function SignUpPage() {
           className="absolute left-0 top-0 hidden w-[128px] md:block"
         />
 
-        <h1 className="mb-12 text-center text-[2.6rem] font-bold text-black text-balance">
+        <h1 className="mb-12 text-center text-[2.6rem] font-bold text-balance" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           SIGN UP
         </h1>
 
         {error && (
-          <div className="mb-6 rounded-lg bg-red-100 p-3 text-sm font-semibold text-red-700 text-center">
+          <div className="mb-6 rounded-lg p-3 text-sm font-semibold text-center" style={{ background: 'rgba(248, 113, 113, 0.15)', color: '#f87171' }}>
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 rounded-lg bg-green-100 p-3 text-sm font-semibold text-green-700 text-center">
+          <div className="mb-6 rounded-lg p-3 text-sm font-semibold text-center" style={{ background: 'rgba(0, 240, 255, 0.1)', color: '#00f0ff' }}>
             {success}
           </div>
         )}
@@ -90,7 +90,8 @@ export default function SignUpPage() {
           {/* Account Number */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
             <label
-              className="text-xl text-black"
+              className="text-xl"
+              style={{ color: 'rgba(255,255,255,0.8)' }}
               htmlFor="signup-account-number"
             >
               Account Number :
@@ -100,13 +101,14 @@ export default function SignUpPage() {
               type="text"
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
-              className="h-[64px] rounded-[40px] border-0 bg-[#d9d9d9] px-7 text-lg text-black outline-none"
+              className="h-[64px] rounded-[40px] px-7 text-lg outline-none"
+              style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#f3f0f7' }}
             />
           </div>
 
           {/* Account Name */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl text-black" htmlFor="signup-account-name">
+            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="signup-account-name">
               Account Name :
             </label>
             <input
@@ -120,7 +122,7 @@ export default function SignUpPage() {
 
           {/* Email */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl text-black" htmlFor="signup-email">
+            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="signup-email">
               Email :
             </label>
             <input
@@ -134,7 +136,7 @@ export default function SignUpPage() {
 
           {/* Password */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
-            <label className="text-xl text-black" htmlFor="signup-password">
+            <label className="text-xl" style={{ color: 'rgba(255,255,255,0.8)' }} htmlFor="signup-password">
               Password :
             </label>
             <input
@@ -149,7 +151,8 @@ export default function SignUpPage() {
           {/* Confirm Password */}
           <div className="grid items-center gap-4 md:grid-cols-[180px_1fr]">
             <label
-              className="text-xl text-black"
+              className="text-xl"
+              style={{ color: 'rgba(255,255,255,0.8)' }}
               htmlFor="signup-confirm-password"
             >
               Confirm Password :
@@ -170,7 +173,8 @@ export default function SignUpPage() {
           </AuthButton>
           <Link
             href="/login"
-            className="text-sm font-bold text-black hover:underline"
+            className="text-sm font-bold hover:underline"
+            style={{ color: 'rgba(255,255,255,0.6)' }}
           >
             Already have an account? Sign In
           </Link>
