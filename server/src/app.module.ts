@@ -13,6 +13,7 @@ import { Payee } from './payees/entities/payee.entity'
 import { ScheduledTransfer } from './scheduled-transfers/entities/scheduled-transfer.entity'
 import { VirtualCard } from './virtual-cards/entities/virtual-card.entity'
 import { BillSplit } from './bill-splits/entities/bill-split.entity'
+import { SavingsJar } from './savings-jars/entities/savings-jar.entity'
 
 // Import modules
 import { AuthModule } from './auth/auth.module'
@@ -33,6 +34,7 @@ import { ScheduledTransfersModule } from './scheduled-transfers/scheduled-transf
 import { MailModule } from './mail/mail.module'
 import { VirtualCardsModule } from './virtual-cards/virtual-cards.module'
 import { BillSplitsModule } from './bill-splits/bill-splits.module'
+import { SavingsJarsModule } from './savings-jars/savings-jars.module'
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { BillSplitsModule } from './bill-splits/bill-splits.module'
       ScheduledTransfer,
       VirtualCard,
       BillSplit,
+      SavingsJar,
     ]),
     AuthModule,
     UsersModule,
@@ -66,6 +69,7 @@ import { BillSplitsModule } from './bill-splits/bill-splits.module'
     MailModule,
     VirtualCardsModule,
     BillSplitsModule,
+    SavingsJarsModule,
   ],
   providers: [SeedService],
 })

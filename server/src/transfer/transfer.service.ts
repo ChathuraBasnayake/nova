@@ -15,6 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service'
 import { User } from '../users/entities/user.entity'
 import { MailService } from '../mail/mail.service'
 import { VirtualCardsService } from '../virtual-cards/virtual-cards.service'
+import { SavingsJarsService } from '../savings-jars/savings-jars.service'
 
 
 @Injectable()
@@ -30,6 +31,7 @@ export class TransferService {
     private mailService: MailService,
     private dataSource: DataSource,
     private readonly virtualCardsService: VirtualCardsService,
+    private readonly savingsJarsService: SavingsJarsService,
   ) {}
 
   async execute(dto: TransferDto, userId: number) {
@@ -75,6 +77,26 @@ export class TransferService {
       throw new NotFoundException('Destination account not found.')
     }
 
+    // Resolve active round-up jar if virtual card is used
+    let roundUpJar = null
+    let roundUpAmount = 0
+    if (dto.cardNumber || dto.cardId) {
+      try {
+        roundUpJar = await this.savingsJarsService.getActiveRoundUpJar(userId)
+        if (roundUpJar) {
+          const rule = Number(roundUpJar.roundUpRule)
+          const amount = Number(dto.amount)
+          const nextMultiple = Math.ceil(amount / rule) * rule
+          const diff = nextMultiple - amount
+          if (diff > 0) {
+            roundUpAmount = diff
+          }
+        }
+      } catch (err) {
+        console.error('Failed to resolve active round-up jar:', err)
+      }
+    }
+
     // Atomic transaction
     const queryRunner = this.dataSource.createQueryRunner()
     await queryRunner.connect()
@@ -91,6 +113,40 @@ export class TransferService {
 
       if (!debitResult || debitResult.length === 0) {
         throw new BadRequestException('Insufficient balance.')
+      }
+
+      let roundUpExecuted = false
+      if (roundUpJar && roundUpAmount > 0) {
+        const currentBalance = Number(debitResult[0].balance)
+        if (currentBalance >= roundUpAmount) {
+          // Debit round-up
+          await queryRunner.query(
+            `UPDATE accounts SET balance = balance - $1 WHERE account_number = $2 AND user_id = $3`,
+            [roundUpAmount, dto.fromAccount, userId],
+          )
+
+          // Credit savings jar
+          await queryRunner.query(
+            `UPDATE savings_jars SET current_amount = current_amount + $1 WHERE id = $2 AND user_id = $3`,
+            [roundUpAmount, roundUpJar.id, userId],
+          )
+
+          // Record transaction
+          await queryRunner.query(
+            `INSERT INTO transactions (from_account, to_account, amount, description, category, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [
+              dto.fromAccount,
+              `JAR:${roundUpJar.id}`,
+              roundUpAmount,
+              `Spare Change Round-up (${roundUpJar.name})`,
+              'Savings',
+              userId,
+            ],
+          )
+
+          roundUpExecuted = true
+        }
       }
 
       // Credit destination
@@ -119,6 +175,7 @@ export class TransferService {
             amount: dto.amount,
             userId,
             transactionId: txRecord.id,
+            roundUp: (roundUpExecuted && roundUpJar) ? { jarId: roundUpJar.id, amount: roundUpAmount } : null,
           }),
         ],
       )
@@ -133,6 +190,25 @@ export class TransferService {
           'Transfer Successful',
           `Sent Rs. ${Number(dto.amount).toLocaleString('en-US')} to account ${dto.toAccount}.`,
         )
+
+        // Send round-up notifications
+        if (roundUpJar && roundUpAmount > 0) {
+          if (roundUpExecuted) {
+            await this.notificationsService.create(
+              userId,
+              'TRANSFER',
+              'Spare Change Swept',
+              `Spare change of Rs. ${roundUpAmount.toLocaleString('en-US')} swept into your "${roundUpJar.name}" jar.`,
+            )
+          } else {
+            await this.notificationsService.create(
+              userId,
+              'TRANSFER',
+              'Round-Up Skipped',
+              `Spare change round-up of Rs. ${roundUpAmount.toLocaleString('en-US')} for "${roundUpJar.name}" was skipped due to insufficient balance.`,
+            )
+          }
+        }
 
         // Send Transfer Receipt Email
         try {

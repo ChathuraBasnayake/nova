@@ -70,6 +70,23 @@ const CreditCard = ({ size = 18 }: IconProps) => (
   </svg>
 )
 
+const PiggyBank = ({ size = 18 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="12" cy="11" r="6" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M12 5V2M10 3h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M18 11h2.5c.8 0 1.5-.7 1.5-1.5s-.7-1.5-1.5-1.5H18" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M6 11H3.5C2.7 11 2 10.3 2 9.5S2.7 8 3.5 8H6" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M9 17v3M15 17v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="10" cy="10" r="0.75" fill="currentColor" />
+  </svg>
+)
+
 const Settings = ({ size = 24 }: IconProps) => (
   <svg
     width={size}
@@ -122,6 +139,7 @@ export default function Sidebar() {
     { label: 'DASHBOARD', path: '/dashboard' },
     { label: 'ACCOUNTS', path: '/bank-accounts' },
     { label: 'CARDS', path: '/cards' },
+    { label: 'SAVINGS JARS', path: '/savings-jars' },
     { label: 'BANK TRANSFER', path: '/bank-transfer' },
     { label: 'PAY BILLS', path: '/pay-bills' },
     { label: 'SMART SPEND', path: '/smart-spend' },
@@ -146,6 +164,7 @@ export default function Sidebar() {
                 <button className={`menu-item ${isActive ? 'active' : ''}`}>
                   {item.label === 'DASHBOARD' && <LayoutGrid size={18} />}
                   {item.label === 'CARDS' && <CreditCard size={18} />}
+                  {item.label === 'SAVINGS JARS' && <PiggyBank size={18} />}
                   {item.label}
                 </button>
               </Link>
