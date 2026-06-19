@@ -25,7 +25,7 @@ export class BillSplit {
   @Column({ default: 'pending' })
   status: 'pending' | 'approved' | 'declined'
 
-  @Column({ name: 'transaction_id', nullable: true })
+  @Column({ name: 'transaction_id', type: 'integer', nullable: true })
   transactionId: number | null
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
