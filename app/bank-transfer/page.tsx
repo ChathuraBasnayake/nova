@@ -44,6 +44,78 @@ export default function Home() {
 
   const [transferType, setTransferType] = useState<'instant' | 'scheduled'>('instant')
   const [frequency, setFrequency] = useState('monthly')
+
+  // Virtual card options
+  const [cards, setCards] = useState<any[]>([])
+  const [useCard, setUseCard] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<any | null>(null)
+
+  // Pending split request options
+  const [pendingSplits, setPendingSplits] = useState<any[]>([])
+  const [loadingSplits, setLoadingSplits] = useState(false)
+  const [splitToApprove, setSplitToApprove] = useState<any | null>(null)
+  const [approveFromAccount, setApproveFromAccount] = useState('')
+
+  const fetchPendingSplits = async () => {
+    setLoadingSplits(true)
+    try {
+      const res = await apiClient<{ ok: boolean; data: any[] }>('/bill-splits/pending')
+      if (res.ok && res.data) {
+        setPendingSplits(res.data)
+      }
+    } catch (err) {
+      console.error('Failed to load pending splits:', err)
+    } finally {
+      setLoadingSplits(false)
+    }
+  }
+
+  const handleDeclineSplit = async (id: number) => {
+    if (!confirm('Are you sure you want to decline this bill split request?')) return
+    try {
+      const res = await apiClient<{ ok: boolean }>('/bill-splits/' + id + '/decline', { method: 'POST' })
+      if (res.ok) {
+        alert('Split request declined.')
+        fetchPendingSplits()
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Failed to decline split request.')
+    }
+  }
+
+  const handleOpenApproveSplit = (split: any) => {
+    setSplitToApprove(split)
+    if (accounts.length > 0) {
+      setApproveFromAccount(accounts[0].accountNumber)
+    }
+  }
+
+  const handleConfirmApproveSplit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!splitToApprove) return
+    try {
+      const res = await apiClient<{ ok: boolean }>('/bill-splits/' + splitToApprove.id + '/approve', {
+        method: 'POST',
+        body: JSON.stringify({ fromAccount: approveFromAccount }),
+      })
+      if (res.ok) {
+        alert('Split request approved and paid!')
+        setSplitToApprove(null)
+        fetchPendingSplits()
+        // Reload accounts to update balances
+        const accRes = await apiClient<{ ok: boolean; data: Account[] }>('/accounts')
+        if (accRes.ok && accRes.data) {
+          setAccounts(accRes.data)
+          if (accRes.data.length > 0) {
+            const currentSelected = accRes.data.find(a => selectedFromAccount && a.accountNumber === selectedFromAccount.accountNumber)
+            setSelectedFromAccount(currentSelected || accRes.data[0])
+          }
+        }
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Failed to approve split request.')
+    }
+  }
   const [startDate, setStartDate] = useState(() => {
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
@@ -85,9 +157,10 @@ export default function Home() {
   useEffect(() => {
     async function fetchAccountsAndPayees() {
       try {
-        const [accRes, payeesRes] = await Promise.all([
+        const [accRes, payeesRes, cardsRes] = await Promise.all([
           apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
           apiClient<{ ok: boolean; data: any[] }>('/payees').catch(() => ({ ok: false, data: [] })),
+          apiClient<{ ok: boolean; data: any[] }>('/virtual-cards').catch(() => ({ ok: false, data: [] })),
         ])
         
         if (accRes.ok && accRes.data && accRes.data.length > 0) {
@@ -97,6 +170,12 @@ export default function Home() {
         if (payeesRes.ok && payeesRes.data) {
           setSavedPayees(payeesRes.data)
         }
+        if (cardsRes.ok && cardsRes.data) {
+          setCards(cardsRes.data)
+          if (cardsRes.data.length > 0) {
+            setSelectedCard(cardsRes.data[0])
+          }
+        }
       } catch (err) {
         console.error('Failed to load transfer page data:', err)
       } finally {
@@ -105,20 +184,29 @@ export default function Home() {
     }
     fetchAccountsAndPayees()
     fetchScheduledTransfers()
+    fetchPendingSplits()
   }, [])
 
   function validate() {
     const e: Errors = {}
-    if (!selectedFromAccount) {
+    if (!useCard && !selectedFromAccount) {
       e.fromAccount = 'Source account is required'
+    }
+    if (useCard && !selectedCard) {
+      e.fromAccount = 'Select a virtual card'
     }
 
     if (!amount) {
       e.amount = 'Amount is required'
     } else if (Number(amount) <= 0 || isNaN(Number(amount))) {
       e.amount = 'Enter a valid positive amount'
-    } else if (selectedFromAccount && Number(amount) > Number(selectedFromAccount.balance)) {
+    } else if (!useCard && selectedFromAccount && Number(amount) > Number(selectedFromAccount.balance)) {
       e.amount = 'Amount exceeds available balance'
+    } else if (useCard && selectedCard) {
+      const linkedAcc = accounts.find(a => a.id === selectedCard.accountId)
+      if (linkedAcc && Number(amount) > Number(linkedAcc.balance)) {
+        e.amount = 'Amount exceeds linked account balance'
+      }
     }
 
     if (!accountNumber) {
@@ -148,27 +236,34 @@ export default function Home() {
 
   async function handleTransfer(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedFromAccount) return
+    if (!useCard && !selectedFromAccount) return
+    if (useCard && !selectedCard) return
 
     setLoading(true)
     setErrorMsg('')
     try {
       let res: any
       if (transferType === 'instant') {
+        const payload: any = {
+          toAccount: accountNumber,
+          amount: Number(amount),
+          description,
+        }
+        if (useCard) {
+          payload.cardId = selectedCard.id
+        } else {
+          payload.fromAccount = selectedFromAccount?.accountNumber
+        }
+
         res = await apiClient<{ ok: boolean; message: string; transaction: any }>('/transfer', {
           method: 'POST',
-          body: JSON.stringify({
-            fromAccount: selectedFromAccount.accountNumber,
-            toAccount: accountNumber,
-            amount: Number(amount),
-            description,
-          }),
+          body: JSON.stringify(payload),
         })
       } else {
         res = await apiClient<{ ok: boolean; message: string; data: any }>('/scheduled-transfers', {
           method: 'POST',
           body: JSON.stringify({
-            fromAccount: selectedFromAccount.accountNumber,
+            fromAccount: selectedFromAccount?.accountNumber,
             toAccount: accountNumber,
             amount: Number(amount),
             description: description || 'Scheduled Payment',
@@ -237,7 +332,7 @@ export default function Home() {
               {step === 'form' ? (
                 <form onSubmit={handleNext} className="transfer-card p-8 !my-0">
                   <div className="grid grid-cols-12 gap-y-6 gap-x-8 items-center">
-                    {/* Payment Type */}
+                     {/* Payment Type */}
                     <label className="col-span-3 text-gray-700 font-semibold">Payment Type :</label>
                     <div className="col-span-9 flex gap-3">
                       <button
@@ -253,7 +348,10 @@ export default function Home() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setTransferType('scheduled')}
+                        onClick={() => {
+                          setTransferType('scheduled')
+                          setUseCard(false)
+                        }}
                         className={`flex-1 py-2.5 px-4 rounded-xl border text-sm font-bold transition-all ${
                           transferType === 'scheduled'
                             ? 'bg-[#450043] text-white border-[#450043] shadow'
@@ -264,28 +362,72 @@ export default function Home() {
                       </button>
                     </div>
 
-                    {/* From Account */}
-                    <label className="col-span-3 text-gray-700">From Account :</label>
+                    {/* Pay using Card Checkbox */}
+                    {transferType === 'instant' && cards.length > 0 && (
+                      <>
+                        <div className="col-span-3"></div>
+                        <div className="col-span-9 flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="pay-using-card-checkbox"
+                            checked={useCard}
+                            onChange={(e) => setUseCard(e.target.checked)}
+                            className="w-4 h-4 accent-[#9a5c97]"
+                          />
+                          <label htmlFor="pay-using-card-checkbox" className="text-sm text-gray-600 font-semibold cursor-pointer select-none">
+                            Pay using Virtual Card
+                          </label>
+                        </div>
+                      </>
+                    )}
+
+                    {/* From Account / Card */}
+                    <label className="col-span-3 text-gray-700">
+                      {useCard ? 'Select Card :' : 'From Account :'}
+                    </label>
                     <div className="col-span-9">
-                      {loadingAccounts ? (
-                        <div className="text-sm text-gray-500">Loading accounts...</div>
-                      ) : accounts.length > 0 ? (
+                      {useCard ? (
                         <select
-                          value={selectedFromAccount?.accountNumber || ''}
+                          value={selectedCard?.id || ''}
                           onChange={(e) => {
-                            const selected = accounts.find(acc => acc.accountNumber === e.target.value)
-                            setSelectedFromAccount(selected || null)
+                            const selected = cards.find(c => c.id === Number(e.target.value))
+                            setSelectedCard(selected || null)
                           }}
                           className="underline-input bg-transparent"
                         >
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.accountNumber}>
-                              {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                            </option>
-                          ))}
+                          {cards.map(c => {
+                            const linkedAcc = accounts.find(a => a.id === c.accountId)
+                            const balanceStr = linkedAcc ? ` - Balance: Rs. ${Number(linkedAcc.balance).toLocaleString()}` : ''
+                            const limitStr = `(Limit: Rs. ${Number(c.dailyLimit).toLocaleString()})`
+                            const isFrozenStr = c.isFrozen ? ' [FROZEN]' : ''
+                            return (
+                              <option key={c.id} value={c.id} disabled={c.isFrozen}>
+                                {c.cardType.toUpperCase()} *{c.cardNumber.slice(-4)}{isFrozenStr} {limitStr}{balanceStr}
+                              </option>
+                            )
+                          })}
                         </select>
                       ) : (
-                        <div className="text-sm text-red-600">No bank accounts available.</div>
+                        loadingAccounts ? (
+                          <div className="text-sm text-gray-500">Loading accounts...</div>
+                        ) : accounts.length > 0 ? (
+                          <select
+                            value={selectedFromAccount?.accountNumber || ''}
+                            onChange={(e) => {
+                              const selected = accounts.find(acc => acc.accountNumber === e.target.value)
+                              setSelectedFromAccount(selected || null)
+                            }}
+                            className="underline-input bg-transparent"
+                          >
+                            {accounts.map(acc => (
+                              <option key={acc.id} value={acc.accountNumber}>
+                                {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="text-sm text-red-600">No bank accounts available.</div>
+                        )
                       )}
                       {errors.fromAccount && (
                         <div className="text-sm text-red-600 mt-1">
@@ -479,6 +621,11 @@ export default function Home() {
                       Confirm your {transferType === 'scheduled' ? `${frequency} scheduled` : ''} transfer of <strong>Rs. {Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>{' '}
                       to <strong>{accountName || 'recipient'}</strong> ({accountNumber})
                     </p>
+                    {useCard && selectedCard && (
+                      <p className="text-sm text-purple-800 font-bold mb-4 bg-purple-55 p-3 rounded-lg border border-purple-200 inline-block">
+                        💳 Paying via Virtual Card: {selectedCard.cardType.toUpperCase()} *{selectedCard.cardNumber.slice(-4)}
+                      </p>
+                    )}
                     {transferType === 'scheduled' ? (
                       <p className="text-sm text-gray-600 mb-6">
                         Starting on: <strong>{new Date(startDate + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>
@@ -561,13 +708,15 @@ export default function Home() {
                           setErrors({})
                           setConfirmation(null)
                           setStep('form')
-                          // Reload accounts to get new balances
+                           // Reload accounts to get new balances
                           apiClient<{ ok: boolean; data: Account[] }>('/accounts').then(res => {
                             if (res.ok && res.data) {
                               setAccounts(res.data)
-                              setSelectedFromAccount(res.data[0])
+                              const currentSelected = res.data.find(a => selectedFromAccount && a.accountNumber === selectedFromAccount.accountNumber)
+                              setSelectedFromAccount(currentSelected || res.data[0])
                             }
                           })
+                          fetchPendingSplits()
                         }}
                         className="transfer-btn success-btn"
                       >
@@ -629,10 +778,66 @@ export default function Home() {
                 </div>
               )}
             </div>
+                        {/* Right side: Scheduled Transfers list & Pending Splits */}
+            <div className="col-span-12 lg:col-span-5 flex flex-col gap-6">
+              
+              {/* Pending Split Requests */}
+              <div className="bg-white rounded-[18px] shadow-[0_22px_50px_rgba(0,0,0,0.12)] border border-[rgba(0,0,0,0.04)] p-6">
+                <h3 className="text-xl font-bold mb-4 text-[#450043] flex items-center gap-2 border-b border-gray-100 pb-3">
+                  <span className="text-2xl">👥</span> Pending Splits
+                </h3>
+                
+                {loadingSplits ? (
+                  <div className="text-sm text-gray-500 py-4 text-center">Loading split requests...</div>
+                ) : pendingSplits.length > 0 ? (
+                  <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                    {pendingSplits.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-4 bg-gray-55 rounded-2xl border border-gray-100 hover:border-gray-200 transition flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex justify-between items-start gap-2">
+                            <span className="font-bold text-gray-900 text-[11px] truncate" style={{ maxWidth: '65%' }}>
+                              From: {item.requesterFullName}
+                            </span>
+                            <span className="font-extrabold text-[#450043] text-xs shrink-0">
+                              Rs. {Number(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-2 bg-white/70 p-2 rounded-lg border border-gray-100">
+                            "{item.description}"
+                          </p>
+                          <p className="text-[9px] text-gray-400 mt-2">
+                            Requested on: {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100/50">
+                          <button
+                            onClick={() => handleDeclineSplit(item.id)}
+                            className="text-xs text-red-600 hover:text-red-800 font-bold transition px-3 py-1.5 rounded-lg hover:bg-red-50"
+                          >
+                            Decline
+                          </button>
+                          <button
+                            onClick={() => handleOpenApproveSplit(item)}
+                            className="text-xs text-white bg-[#450043] hover:bg-[#9a5c97] font-bold transition px-3.5 py-1.5 rounded-lg shadow-sm"
+                          >
+                            Approve & Pay
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-gray-400 text-sm">
+                    No pending split requests.
+                  </div>
+                )}
+              </div>
 
-            {/* Right side: Scheduled Transfers list */}
-            <div className="col-span-12 lg:col-span-5">
-              <div className="bg-white rounded-[18px] shadow-[0_22px_50px_rgba(0,0,0,0.12)] border border-[rgba(0,0,0,0.04)] p-6 min-h-[500px]">
+              {/* Scheduled Payments */}
+              <div className="bg-white rounded-[18px] shadow-[0_22px_50px_rgba(0,0,0,0.12)] border border-[rgba(0,0,0,0.04)] p-6 min-h-[300px]">
                 <h3 className="text-xl font-bold mb-6 text-[#450043] flex items-center gap-2 border-b border-gray-100 pb-3">
                   <span className="text-2xl">📅</span> Scheduled Payments
                 </h3>
@@ -640,11 +845,11 @@ export default function Home() {
                 {loadingScheduled ? (
                   <div className="text-sm text-gray-500 py-4 text-center">Loading payments...</div>
                 ) : scheduledTransfers.length > 0 ? (
-                  <div className="space-y-4 max-h-[550px] overflow-y-auto pr-1">
+                  <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
                     {scheduledTransfers.map((item) => (
                       <div
                         key={item.id}
-                        className="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-gray-200 transition relative flex flex-col justify-between"
+                        className="p-4 bg-gray-55 rounded-2xl border border-gray-100 hover:border-gray-200 transition relative flex flex-col justify-between"
                       >
                         <div>
                           <div className="flex justify-between items-start">
@@ -688,6 +893,56 @@ export default function Home() {
           </div>
         </main>
       </div>
+
+      {/* Split Approval Popup */}
+      {splitToApprove && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[9999]" onClick={() => setSplitToApprove(null)}>
+          <div className="bg-white rounded-2xl w-[400px] max-w-[90%] p-6 text-gray-800 shadow-2xl flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-[#450043] border-b pb-2">Approve Split Request</h3>
+            <div>
+              <p className="text-sm text-gray-600">You are paying <strong>{splitToApprove.requesterFullName}</strong></p>
+              <p className="text-sm text-gray-600">Amount: <strong className="text-green-600">Rs. {Number(splitToApprove.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></p>
+              <p className="text-sm text-gray-550 italic mt-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                "{splitToApprove.description}"
+              </p>
+            </div>
+
+            <form onSubmit={handleConfirmApproveSplit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500">Pay from Account</label>
+                <select
+                  value={approveFromAccount}
+                  onChange={(e) => setApproveFromAccount(e.target.value)}
+                  className="w-full border rounded-lg p-2 bg-transparent text-sm focus:border-[#9a5c97] outline-none"
+                  required
+                >
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.accountNumber}>
+                      {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setSplitToApprove(null)}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#450043] hover:bg-[#9a5c97] text-white shadow"
+                >
+                  Confirm & Pay
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

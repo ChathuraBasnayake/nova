@@ -70,22 +70,36 @@ export default function PayBillsPage() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [loading, setLoading] = useState(false)
 
-  // Fetch accounts on mount
+  // Virtual card options
+  const [cards, setCards] = useState<any[]>([])
+  const [useCard, setUseCard] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<any | null>(null)
+
+  // Fetch accounts & cards on mount
   useEffect(() => {
-    async function fetchAccounts() {
+    async function fetchAccountsAndCards() {
       try {
-        const res = await apiClient<{ ok: boolean; data: Account[] }>('/accounts')
-        if (res.ok && res.data && res.data.length > 0) {
-          setAccounts(res.data)
-          setSelectedFromAccount(res.data[0])
+        const [accRes, cardsRes] = await Promise.all([
+          apiClient<{ ok: boolean; data: Account[] }>('/accounts'),
+          apiClient<{ ok: boolean; data: any[] }>('/virtual-cards').catch(() => ({ ok: false, data: [] })),
+        ])
+        if (accRes.ok && accRes.data && accRes.data.length > 0) {
+          setAccounts(accRes.data)
+          setSelectedFromAccount(accRes.data[0])
+        }
+        if (cardsRes.ok && cardsRes.data) {
+          setCards(cardsRes.data)
+          if (cardsRes.data.length > 0) {
+            setSelectedCard(cardsRes.data[0])
+          }
         }
       } catch (err) {
-        console.error('Failed to load accounts:', err)
+        console.error('Failed to load accounts/cards:', err)
       } finally {
         setLoadingAccounts(false)
       }
     }
-    fetchAccounts()
+    fetchAccountsAndCards()
   }, [])
 
   function handleSelectBiller(biller: Biller) {
@@ -97,8 +111,11 @@ export default function PayBillsPage() {
   function validateForm(): boolean {
     const newErrors: FormErrors = {}
 
-    if (!selectedFromAccount) {
+    if (!useCard && !selectedFromAccount) {
       newErrors.fromAccount = 'Source account is required'
+    }
+    if (useCard && !selectedCard) {
+      newErrors.fromAccount = 'Select a virtual card'
     }
 
     if (!accountNumber.trim()) {
@@ -119,8 +136,13 @@ export default function PayBillsPage() {
       const amount = Number(dueAmount)
       if (Number.isNaN(amount) || amount <= 0) {
         newErrors.dueAmount = 'Enter a valid amount greater than 0'
-      } else if (selectedFromAccount && amount > Number(selectedFromAccount.balance)) {
+      } else if (!useCard && selectedFromAccount && amount > Number(selectedFromAccount.balance)) {
         newErrors.dueAmount = 'Amount exceeds available balance'
+      } else if (useCard && selectedCard) {
+        const linkedAcc = accounts.find(a => a.id === selectedCard.accountId)
+        if (linkedAcc && amount > Number(linkedAcc.balance)) {
+          newErrors.dueAmount = 'Amount exceeds linked account balance'
+        }
       }
     }
 
@@ -129,22 +151,29 @@ export default function PayBillsPage() {
   }
 
   async function handlePayNow() {
-    if (!validateForm() || !selectedFromAccount || !selectedBiller) {
+    if (!validateForm() || (!useCard && !selectedFromAccount) || (useCard && !selectedCard) || !selectedBiller) {
       return
     }
 
     setLoading(true)
     setFailReason('')
     try {
-      // Execute the bill payment as a transfer to Admin Vault (representing the central pool)
+      const payload: any = {
+        toAccount: '9999999999', // Seeded Admin Vault
+        amount: Number(dueAmount),
+        description: `Bill Payment: ${selectedBiller.name} - Ref: ${billId} (${remarks || 'No remarks'})`,
+      }
+      
+      if (useCard) {
+        payload.cardId = selectedCard.id
+      } else {
+        payload.fromAccount = selectedFromAccount?.accountNumber
+      }
+
+      // Execute the bill payment as a transfer to Admin Vault
       const res = await apiClient<{ ok: boolean; message: string; transaction: any }>('/transfer', {
         method: 'POST',
-        body: JSON.stringify({
-          fromAccount: selectedFromAccount.accountNumber,
-          toAccount: '9999999999', // Seeded Admin Vault
-          amount: Number(dueAmount),
-          description: `Bill Payment: ${selectedBiller.name} - Ref: ${billId} (${remarks || 'No remarks'})`,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (res.ok) {
@@ -248,19 +277,31 @@ export default function PayBillsPage() {
                   <span className="biller-header-name">
                     {selectedBiller.name}
                   </span>
-                </div>
+                </div>                 {/* Pay using Card Checkbox */}
+                {cards.length > 0 && (
+                  <div className="field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <input
+                      type="checkbox"
+                      id="pay-using-card-checkbox"
+                      checked={useCard}
+                      onChange={(e) => setUseCard(e.target.checked)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
+                    />
+                    <label htmlFor="pay-using-card-checkbox" style={{ cursor: 'pointer', userSelect: 'none', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
+                      Pay using Virtual Card
+                    </label>
+                  </div>
+                )}
 
-                {/* From Account */}
+                {/* From Account / Card */}
                 <div className="field">
-                  <label>Pay From Account</label>
-                  {loadingAccounts ? (
-                    <div className="text-sm text-gray-500">Loading accounts...</div>
-                  ) : accounts.length > 0 ? (
+                  <label>{useCard ? 'Select Card' : 'Pay From Account'}</label>
+                  {useCard ? (
                     <select
-                      value={selectedFromAccount?.accountNumber || ''}
+                      value={selectedCard?.id || ''}
                       onChange={(e) => {
-                        const selected = accounts.find(acc => acc.accountNumber === e.target.value)
-                        setSelectedFromAccount(selected || null)
+                        const selected = cards.find(c => c.id === Number(e.target.value))
+                        setSelectedCard(selected || null)
                       }}
                       className="underline-select"
                       style={{
@@ -273,14 +314,48 @@ export default function PayBillsPage() {
                         outline: 'none',
                       }}
                     >
-                      {accounts.map(acc => (
-                        <option key={acc.id} value={acc.accountNumber}>
-                          {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                        </option>
-                      ))}
+                      {cards.map(c => {
+                        const linkedAcc = accounts.find(a => a.id === c.accountId)
+                        const balanceStr = linkedAcc ? ` - Balance: Rs. ${Number(linkedAcc.balance).toLocaleString()}` : ''
+                        const limitStr = `(Limit: Rs. ${Number(c.dailyLimit).toLocaleString()})`
+                        const isFrozenStr = c.isFrozen ? ' [FROZEN]' : ''
+                        return (
+                          <option key={c.id} value={c.id} disabled={c.isFrozen}>
+                            {c.cardType.toUpperCase()} *{c.cardNumber.slice(-4)}{isFrozenStr} {limitStr}{balanceStr}
+                          </option>
+                        )
+                      })}
                     </select>
                   ) : (
-                    <div className="text-sm text-red-600">No bank accounts available.</div>
+                    loadingAccounts ? (
+                      <div className="text-sm text-gray-500">Loading accounts...</div>
+                    ) : accounts.length > 0 ? (
+                      <select
+                        value={selectedFromAccount?.accountNumber || ''}
+                        onChange={(e) => {
+                          const selected = accounts.find(acc => acc.accountNumber === e.target.value)
+                          setSelectedFromAccount(selected || null)
+                        }}
+                        className="underline-select"
+                        style={{
+                          background: '#f3f4f6',
+                          border: '1.5px solid transparent',
+                          borderRadius: '12px',
+                          padding: '0.85rem 1.1rem',
+                          fontSize: '0.95rem',
+                          color: '#333',
+                          outline: 'none',
+                        }}
+                      >
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.accountNumber}>
+                            {acc.accountName} ({acc.accountNumber}) - Rs. {Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="text-sm text-red-600">No bank accounts available.</div>
+                    )
                   )}
                   {errors.fromAccount && (
                     <span className="error-text">{errors.fromAccount}</span>

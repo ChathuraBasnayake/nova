@@ -36,6 +36,57 @@ export default function Dashboard() {
 
   const [payees, setPayees] = useState<any[]>([])
 
+  // Split bill states
+  const [showSplitModal, setShowSplitModal] = useState(false)
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null)
+  const [friendUsername, setFriendUsername] = useState('')
+  const [splitAmount, setSplitAmount] = useState('')
+  const [splitDescription, setSplitDescription] = useState('')
+  const [isSubmittingSplit, setIsSubmittingSplit] = useState(false)
+
+  const handleOpenSplitModal = (tx: Transaction) => {
+    setSelectedTx(tx)
+    setFriendUsername('')
+    setSplitAmount((Number(tx.amount) / 2).toString())
+    setSplitDescription(`Split bill for ${tx.description || 'Transaction'}`)
+    setShowSplitModal(true)
+  }
+
+  const handleSendSplitRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedTx) return
+
+    const amount = Number(splitAmount)
+    if (isNaN(amount) || amount <= 0 || amount > Number(selectedTx.amount)) {
+      alert(`Invalid split amount. Must be positive and at most Rs. ${Number(selectedTx.amount).toLocaleString()}`)
+      return
+    }
+
+    if (!friendUsername.trim()) {
+      alert('Please enter a friend\'s username.')
+      return
+    }
+
+    setIsSubmittingSplit(true)
+    try {
+      await apiClient('/bill-splits', {
+        method: 'POST',
+        body: JSON.stringify({
+          payerUsername: friendUsername.trim(),
+          amount,
+          description: splitDescription.trim(),
+          transactionId: selectedTx.id,
+        }),
+      })
+      alert('Split bill request sent successfully!')
+      setShowSplitModal(false)
+    } catch (err: any) {
+      alert(err?.message || 'Failed to send split bill request.')
+    } finally {
+      setIsSubmittingSplit(false)
+    }
+  }
+
   // Fetch accounts & payees on mount
   useEffect(() => {
     async function fetchAccountsAndPayees() {
@@ -224,6 +275,14 @@ export default function Dashboard() {
                       {prefix}Rs. {Number(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                     <span className="transaction-status">{t.status}</span>
+                    {isDebit && (
+                      <button
+                        onClick={() => handleOpenSplitModal(t)}
+                        className="split-btn"
+                      >
+                        Split 👥
+                      </button>
+                    )}
                   </div>
                 )
               })
@@ -233,6 +292,79 @@ export default function Dashboard() {
           </div>
         </div>
       </section>
+
+      {showSplitModal && selectedTx && (
+        <div className="modal-overlay" onClick={() => setShowSplitModal(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Split Bill with a Friend</h3>
+            <div className="modal-tx-info">
+              <p><strong>Transaction:</strong> {selectedTx.description || 'Transfer'}</p>
+              <p><strong>Total Amount:</strong> Rs. {Number(selectedTx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+            </div>
+            
+            <form onSubmit={handleSendSplitRequest} className="modal-form">
+              <div className="modal-input-group">
+                <label className="modal-label">Friend's Username</label>
+                <input
+                  type="text"
+                  value={friendUsername}
+                  onChange={(e) => setFriendUsername(e.target.value)}
+                  placeholder="Enter username (e.g. kasun)"
+                  className="modal-input"
+                  required
+                />
+              </div>
+
+              <div className="modal-input-group">
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <label className="modal-label">Split Amount (Rs.)</label>
+                  <span style={{ fontSize: '0.8rem', color: '#888' }}>Max: Rs. {Number(selectedTx.amount).toLocaleString()}</span>
+                </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  max={Number(selectedTx.amount)}
+                  value={splitAmount}
+                  onChange={(e) => setSplitAmount(e.target.value)}
+                  className="modal-input"
+                  required
+                />
+              </div>
+
+              <div className="modal-input-group">
+                <label className="modal-label">Description</label>
+                <input
+                  type="text"
+                  value={splitDescription}
+                  onChange={(e) => setSplitDescription(e.target.value)}
+                  placeholder="e.g. Dinner split"
+                  className="modal-input"
+                  required
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  onClick={() => setShowSplitModal(false)}
+                  className="modal-btn-cancel"
+                  disabled={isSubmittingSplit}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-btn-submit"
+                  disabled={isSubmittingSplit}
+                >
+                  {isSubmittingSplit ? 'Sending...' : 'Send Request'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .dashboard {
@@ -616,11 +748,139 @@ export default function Dashboard() {
           .welcome-image {
             height: 130px;
           }
-          .transaction-date,
+           .transaction-date,
           .transaction-account,
           .transaction-amount {
             font-size: 0.8rem;
           }
+        }
+
+        .split-btn {
+          background: #450043;
+          color: white;
+          border: none;
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .split-btn:hover {
+          background: #9a5c97;
+        }
+
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(5px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+        }
+
+        .modal-card {
+          background: #ffffff;
+          border-radius: 16px;
+          width: 420px;
+          max-width: 90%;
+          padding: 2rem;
+          color: #333333;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+
+        .modal-title {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #450043;
+          margin: 0;
+          border-bottom: 1px solid #eeeeee;
+          padding-bottom: 0.75rem;
+        }
+
+        .modal-tx-info {
+          background: #f7f5f8;
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          border-left: 4px solid #9a5c97;
+        }
+
+        .modal-tx-info p {
+          margin: 0.25rem 0;
+        }
+
+        .modal-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .modal-input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+        }
+
+        .modal-label {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #666666;
+        }
+
+        .modal-input {
+          padding: 0.65rem 0.85rem;
+          border: 1px solid #dddddd;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          outline: none;
+          color: #333333;
+          background: #ffffff;
+        }
+
+        .modal-input:focus {
+          border-color: #9a5c97;
+        }
+
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          margin-top: 0.5rem;
+        }
+
+        .modal-btn-cancel {
+          background: #f3f4f6;
+          color: #4b5563;
+          border: none;
+          padding: 0.65rem 1.25rem;
+          font-weight: 600;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+
+        .modal-btn-submit {
+          background: #450043;
+          color: #ffffff;
+          border: none;
+          padding: 0.65rem 1.25rem;
+          font-weight: 600;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .modal-btn-submit:hover {
+          background: #9a5c97;
         }
       `}</style>
     </main>

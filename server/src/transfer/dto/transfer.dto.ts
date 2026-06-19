@@ -2,10 +2,10 @@ import { IsString, IsNotEmpty, IsNumber, IsOptional, Min } from 'class-validator
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class TransferDto {
-  @ApiProperty({ example: '1000003423' })
+  @ApiPropertyOptional({ example: '1000003423' })
   @IsString()
-  @IsNotEmpty()
-  fromAccount: string
+  @IsOptional()
+  fromAccount?: string
 
   @ApiProperty({ example: '2000006754' })
   @IsString()
@@ -21,4 +21,14 @@ export class TransferDto {
   @IsString()
   @IsOptional()
   description?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  cardNumber?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  cardId?: number
 }

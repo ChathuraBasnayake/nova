@@ -11,6 +11,8 @@ import { Budget } from './budgets/entities/budget.entity'
 import { Notification } from './notifications/entities/notification.entity'
 import { Payee } from './payees/entities/payee.entity'
 import { ScheduledTransfer } from './scheduled-transfers/entities/scheduled-transfer.entity'
+import { VirtualCard } from './virtual-cards/entities/virtual-card.entity'
+import { BillSplit } from './bill-splits/entities/bill-split.entity'
 
 // Import modules
 import { AuthModule } from './auth/auth.module'
@@ -29,11 +31,23 @@ import { PayeesModule } from './payees/payees.module'
 import { StatementsModule } from './statements/statements.module'
 import { ScheduledTransfersModule } from './scheduled-transfers/scheduled-transfers.module'
 import { MailModule } from './mail/mail.module'
+import { VirtualCardsModule } from './virtual-cards/virtual-cards.module'
+import { BillSplitsModule } from './bill-splits/bill-splits.module'
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(databaseConfig()),
-    TypeOrmModule.forFeature([User, Account, Transaction, Budget, Notification, Payee, ScheduledTransfer]),
+    TypeOrmModule.forFeature([
+      User,
+      Account,
+      Transaction,
+      Budget,
+      Notification,
+      Payee,
+      ScheduledTransfer,
+      VirtualCard,
+      BillSplit,
+    ]),
     AuthModule,
     UsersModule,
     AccountsModule,
@@ -50,6 +64,8 @@ import { MailModule } from './mail/mail.module'
     StatementsModule,
     ScheduledTransfersModule,
     MailModule,
+    VirtualCardsModule,
+    BillSplitsModule,
   ],
   providers: [SeedService],
 })

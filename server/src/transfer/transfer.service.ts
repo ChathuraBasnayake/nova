@@ -14,6 +14,7 @@ import { TransferDto } from './dto/transfer.dto'
 import { NotificationsService } from '../notifications/notifications.service'
 import { User } from '../users/entities/user.entity'
 import { MailService } from '../mail/mail.service'
+import { VirtualCardsService } from '../virtual-cards/virtual-cards.service'
 
 
 @Injectable()
@@ -28,9 +29,32 @@ export class TransferService {
     private notificationsService: NotificationsService,
     private mailService: MailService,
     private dataSource: DataSource,
+    private readonly virtualCardsService: VirtualCardsService,
   ) {}
 
   async execute(dto: TransferDto, userId: number) {
+    if (dto.cardNumber || dto.cardId) {
+      let cardNumber = dto.cardNumber
+      if (dto.cardId) {
+        const card = await this.virtualCardsService.findById(userId, dto.cardId)
+        cardNumber = card.cardNumber
+      }
+      if (!cardNumber) {
+        throw new BadRequestException('Card number is required when paying with card.')
+      }
+
+      const cardAccount = await this.virtualCardsService.validateCardUsage(cardNumber, dto.amount)
+      dto.fromAccount = cardAccount.accountNumber
+
+      const cardLast4 = cardNumber.slice(-4)
+      const cardSuffix = `(Card: ${cardLast4})`
+      dto.description = dto.description ? `${dto.description} ${cardSuffix}` : cardSuffix
+    }
+
+    if (!dto.fromAccount) {
+      throw new BadRequestException('Source account or card is required.')
+    }
+
     if (dto.fromAccount === dto.toAccount) {
       throw new BadRequestException('Cannot transfer to the same account.')
     }

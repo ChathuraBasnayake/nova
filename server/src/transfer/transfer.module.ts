@@ -6,11 +6,13 @@ import { Account } from '../accounts/entities/account.entity'
 import { Transaction } from '../transactions/entities/transaction.entity'
 import { AuditLog } from '../admin/entities/audit-log.entity'
 import { NotificationsModule } from '../notifications/notifications.module'
+import { VirtualCardsModule } from '../virtual-cards/virtual-cards.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Account, Transaction, AuditLog]),
     NotificationsModule,
+    VirtualCardsModule,
   ],
   controllers: [TransferController],
   providers: [TransferService],

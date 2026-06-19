@@ -48,6 +48,28 @@ const LayoutGrid = ({ size = 18 }: IconProps) => (
   </svg>
 )
 
+const CreditCard = ({ size = 18 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect
+      x="2"
+      y="5"
+      width="20"
+      height="14"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path d="M2 10H22" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M6 14H10" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+)
+
 const Settings = ({ size = 24 }: IconProps) => (
   <svg
     width={size}
@@ -99,6 +121,7 @@ export default function Sidebar() {
   const menuItems = [
     { label: 'DASHBOARD', path: '/dashboard' },
     { label: 'ACCOUNTS', path: '/bank-accounts' },
+    { label: 'CARDS', path: '/cards' },
     { label: 'BANK TRANSFER', path: '/bank-transfer' },
     { label: 'PAY BILLS', path: '/pay-bills' },
     { label: 'SMART SPEND', path: '/smart-spend' },
@@ -122,6 +145,7 @@ export default function Sidebar() {
               <Link key={item.label} href={item.path} className="menu-link">
                 <button className={`menu-item ${isActive ? 'active' : ''}`}>
                   {item.label === 'DASHBOARD' && <LayoutGrid size={18} />}
+                  {item.label === 'CARDS' && <CreditCard size={18} />}
                   {item.label}
                 </button>
               </Link>
