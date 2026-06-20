@@ -13,9 +13,52 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState<'request' | 'reset'>('request')
+  const [otpCountdown, setOtpCountdown] = useState(0)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle OTP request
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+
+    if (!email.trim()) {
+      setError('Email is required.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await apiClient('/auth/request-reset-otp', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: email.trim()
+        })
+      })
+      setSuccess('OTP sent to your email! Valid for 10 minutes.')
+      setStep('reset')
+
+      // Start countdown timer
+      let countdown = 600 // 10 minutes in seconds
+      const interval = setInterval(() => {
+        countdown--
+        setOtpCountdown(countdown)
+        if (countdown <= 0) {
+          clearInterval(interval)
+          setStep('request')
+          setOtpCountdown(0)
+        }
+      }, 1000)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send OTP.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle password reset with OTP
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -51,6 +94,12 @@ export default function ResetPasswordPage() {
     }
   }
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`
+  }
+
   return (
     <div className="relative w-full py-8 md:py-12">
       {/* Background Glowing Orbs */}
@@ -78,7 +127,7 @@ export default function ResetPasswordPage() {
           boxShadow: '0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
         }}
       >
-        <form onSubmit={handleSubmit} className="w-full max-w-[650px]">
+        <form onSubmit={step === 'request' ? handleRequestOtp : handleResetPassword} className="w-full max-w-[650px]">
           {/* Top Logo */}
           <div className="mb-10 flex flex-col items-center justify-center text-center">
             <img
@@ -90,7 +139,7 @@ export default function ResetPasswordPage() {
               Reset Password
             </h1>
             <p className="mt-2 text-sm font-medium text-white/50 tracking-wider">
-              Verify your information to regain secure access
+              {step === 'request' ? 'Enter your email to receive an OTP' : 'Verify your OTP and set a new password'}
             </p>
           </div>
 
@@ -125,7 +174,7 @@ export default function ResetPasswordPage() {
 
           {/* Form Fields */}
           <div className="space-y-5">
-            {/* Email */}
+            {/* Email - Always visible */}
             <div className="grid items-center gap-2 md:grid-cols-[160px_1fr]">
               <label 
                 className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6" 
@@ -139,57 +188,68 @@ export default function ResetPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your registered email"
-                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
-                style={{ 
+                disabled={step === 'reset'}
+                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white disabled:opacity-50"
+                style={{
                   border: '1px solid rgba(255,255,255,0.08)', 
                   background: 'rgba(255,255,255,0.04)',
                 }}
               />
             </div>
 
-            {/* OTP */}
-            <div className="grid items-center gap-2 md:grid-cols-[160px_1fr]">
-              <label 
-                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6" 
-                htmlFor="reset-otp"
-              >
-                OTP Code
-              </label>
-              <input
-                id="reset-otp"
-                type="text"
-                placeholder="Enter 6-digit OTP code"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
-                style={{ 
-                  border: '1px solid rgba(255,255,255,0.08)', 
-                  background: 'rgba(255,255,255,0.04)',
-                }}
-              />
-            </div>
+            {/* OTP - Only visible in reset step */}
+            {step === 'reset' && (
+              <div className="grid items-center gap-2 md:grid-cols-[160px_1fr]">
+                <label
+                  className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6"
+                  htmlFor="reset-otp"
+                >
+                  OTP Code
+                </label>
+                <input
+                  id="reset-otp"
+                  type="text"
+                  placeholder="Enter 6-digit OTP code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  maxLength={6}
+                  className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white text-center tracking-widest"
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.04)',
+                  }}
+                />
+                {otpCountdown > 0 && (
+                  <p className="text-xs text-white/50 md:col-span-2 md:text-right md:pr-6 mt-2">
+                    OTP expires in: <span className="text-white/70 font-semibold">{formatTime(otpCountdown)}</span>
+                  </p>
+                )}
+              </div>
+            )}
 
-            {/* New Password */}
-            <div className="grid items-center gap-2 md:grid-cols-[160px_1fr]">
-              <label 
-                className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6" 
-                htmlFor="reset-password"
-              >
-                New Password
-              </label>
-              <input
-                id="reset-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Choose new password"
-                className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
-                style={{ 
-                  border: '1px solid rgba(255,255,255,0.08)', 
-                  background: 'rgba(255,255,255,0.04)',
-                }}
-              />
-            </div>
+            {/* New Password - Only visible in reset step */}
+            {step === 'reset' && (
+              <div className="grid items-center gap-2 md:grid-cols-[160px_1fr]">
+                <label
+                  className="text-base font-bold tracking-wider text-white/70 uppercase md:text-right md:pr-6"
+                  htmlFor="reset-password"
+                >
+                  New Password
+                </label>
+                <input
+                  id="reset-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Choose new password"
+                  className="h-[56px] rounded-full px-6 text-base font-medium outline-none transition-all duration-300 border border-white/85 text-white"
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.04)',
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Interactive Styling for Inputs */}
@@ -203,10 +263,33 @@ export default function ResetPasswordPage() {
 
           {/* Action Buttons */}
           <div className="mt-10 flex flex-col items-center gap-5">
-            <AuthButton type="submit" disabled={loading} className="w-full max-w-[280px]">
-              {loading ? 'RESETTING...' : 'RESET PASSWORD'}
-            </AuthButton>
-            
+            {step === 'request' ? (
+              <>
+                <AuthButton type="submit" disabled={loading} className="w-full max-w-[280px]">
+                  {loading ? 'SENDING OTP...' : 'REQUEST OTP'}
+                </AuthButton>
+              </>
+            ) : (
+              <>
+                <AuthButton type="submit" disabled={loading} className="w-full max-w-[280px]">
+                  {loading ? 'RESETTING...' : 'RESET PASSWORD'}
+                </AuthButton>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('request')
+                    setOtp('')
+                    setPassword('')
+                    setSuccess('')
+                  }}
+                  className="text-sm font-bold tracking-wide transition-all duration-200 hover:text-white"
+                  style={{ color: '#d8b4fe' }}
+                >
+                  Back to Request OTP
+                </button>
+              </>
+            )}
+
             <Link
               href="/login"
               className="text-sm font-bold tracking-wide transition-all duration-200 hover:text-white"

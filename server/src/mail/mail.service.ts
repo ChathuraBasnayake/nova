@@ -263,4 +263,33 @@ export class MailService implements OnModuleInit {
       content
     )
   }
+
+  async sendPasswordResetOtpEmail(to: string, name: string, otp: string) {
+    const subtitle = 'Your Password Reset Code'
+    const content = `
+      <h2>Password Reset Request</h2>
+      <p>Hello ${name},</p>
+      <p>You requested to reset your Nova Bank password. Please use the following One-Time Password (OTP) to complete the reset process:</p>
+      <div style="background-color: #f3f4f6; border: 2px solid #9a5c97; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #666666;">Your One-Time Password (OTP)</p>
+        <p style="margin: 10px 0 0 0; font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #450043; font-family: 'Courier New', monospace;">${otp}</p>
+        <p style="margin: 10px 0 0 0; font-size: 12px; color: #666666;">Valid for 10 minutes</p>
+      </div>
+      <p><strong>Important Security Notes:</strong></p>
+      <ul>
+        <li>Never share this OTP with anyone, including Nova Bank staff</li>
+        <li>This code will expire in 10 minutes</li>
+        <li>If you did not request this, please ignore this email</li>
+      </ul>
+      <div style="text-align: center;">
+        <a href="http://localhost:3000/reset-password" class="btn">Continue to Reset Password</a>
+      </div>
+    `
+    await this.sendEmail(
+      to,
+      'Nova Bank Password Reset - Your OTP Code',
+      subtitle,
+      content
+    )
+  }
 }

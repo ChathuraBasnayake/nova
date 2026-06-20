@@ -15,6 +15,7 @@ import { User } from '../users/entities/user.entity'
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
+import { RequestResetOtpDto } from './dto/request-reset-otp.dto'
 
 const SALT_ROUNDS = 12
 
@@ -154,10 +155,35 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP format. Must be 6 digits.')
     }
 
+    // Verify OTP
+    const userWithOtp = await this.usersRepository
+      .createQueryBuilder('user')
+      .addSelect('user.resetOtp')
+      .where('user.id = :id', { id: user.id })
+      .getOne()
+
+    if (!userWithOtp || !userWithOtp.resetOtp) {
+      throw new BadRequestException('No OTP request found. Please request an OTP first.')
+    }
+
+    if (userWithOtp.resetOtp !== dto.otp) {
+      throw new BadRequestException('Invalid OTP.')
+    }
+
+    // Check if OTP has expired (10 minutes)
+    const now = new Date()
+    if (userWithOtp.resetOtpExpiresAt && now > userWithOtp.resetOtpExpiresAt) {
+      throw new BadRequestException('OTP has expired. Please request a new one.')
+    }
+
     const hashedPassword = await bcrypt.hash(dto.newPassword, SALT_ROUNDS)
 
-    // Update password
-    await this.usersRepository.update(user.id, { password: hashedPassword })
+    // Update password and clear OTP
+    await this.usersRepository.update(user.id, {
+      password: hashedPassword,
+      resetOtp: null as any,
+      resetOtpExpiresAt: null as any
+    })
 
     // Send Password Reset Success Email
     try {
@@ -169,6 +195,40 @@ export class AuthService {
     return {
       ok: true,
       message: 'Password reset successfully.'
+    }
+  }
+
+  async requestResetOtp(dto: RequestResetOtpDto) {
+    const user = await this.usersRepository.findOne({
+      where: { email: dto.email }
+    })
+    if (!user) {
+      throw new NotFoundException('User with this email not found.')
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+
+    // OTP valid for 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+
+    // Save OTP to user
+    await this.usersRepository.update(user.id, {
+      resetOtp: otp,
+      resetOtpExpiresAt: expiresAt
+    })
+
+    // Send OTP via email
+    try {
+      await this.mailService.sendPasswordResetOtpEmail(user.email, user.fullName, otp)
+    } catch (mailErr) {
+      console.error('Failed to send OTP email:', mailErr)
+      throw new BadRequestException('Failed to send OTP email. Please try again.')
+    }
+
+    return {
+      ok: true,
+      message: 'OTP has been sent to your email. Valid for 10 minutes.'
     }
   }
 

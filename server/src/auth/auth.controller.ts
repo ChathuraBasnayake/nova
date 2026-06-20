@@ -6,6 +6,7 @@ import { AuthService } from './auth.service'
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
+import { RequestResetOtpDto } from './dto/request-reset-otp.dto'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -28,6 +29,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Reset password with email verification code' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto)
+  }
+
+  @Post('request-reset-otp')
+  @ApiOperation({ summary: 'Request OTP for password reset' })
+  requestResetOtp(@Body() dto: RequestResetOtpDto) {
+    return this.authService.requestResetOtp(dto)
   }
 
   @Get('me')

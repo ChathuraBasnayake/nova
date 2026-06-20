@@ -33,6 +33,12 @@ export class User {
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl: string
 
+  @Column({ name: 'reset_otp', type: 'varchar', nullable: true, select: false })
+  resetOtp: string | null
+
+  @Column({ name: 'reset_otp_expires_at', type: 'timestamptz', nullable: true })
+  resetOtpExpiresAt: Date | null
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date
 

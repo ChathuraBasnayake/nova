@@ -1,33 +1,33 @@
 /* ===== ROOT VARIABLES & GLOBAL STYLES ===== */
 .accountsPage {
   /* Colors */
-  --color-primary: #450043;
-  --color-primary-hover: #5a0058;
-  --color-primary-light: rgba(69, 0, 67, 0.1);
-  --color-secondary: #2563eb;
-  --color-secondary-hover: #1d4ed8;
-  --color-secondary-light: rgba(37, 99, 235, 0.3);
+  --color-primary: #9d4edd;
+  --color-primary-hover: #b5179e;
+  --color-primary-light: rgba(157, 78, 221, 0.15);
+  --color-secondary: #00f0ff;
+  --color-secondary-hover: #00e0ef;
+  --color-secondary-light: rgba(0, 240, 255, 0.2);
   
-  --color-background: #f1f1f1;
+  --color-background: #0b0713;
   --color-white: #ffffff;
   --color-black: #000000;
-  --color-text: #374151;
-  --color-text-light: #6b7280;
-  --color-text-muted: #9ca3af;
+  --color-text: rgba(255, 255, 255, 0.85);
+  --color-text-light: rgba(255, 255, 255, 0.6);
+  --color-text-muted: rgba(255, 255, 255, 0.4);
   
-  --color-border: #e5e7eb;
-  --color-border-light: #f0f0f0;
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  --color-shadow-hover: rgba(0, 0, 0, 0.2);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-light: rgba(255, 255, 255, 0.05);
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-shadow-hover: rgba(0, 0, 0, 0.5);
   
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-error-light: rgba(239, 68, 68, 0.1);
+  --color-success: #00f0ff;
+  --color-error: #ff007f;
+  --color-error-light: rgba(255, 0, 127, 0.15);
   
-  --color-avatar-bg: #93c5fd;
-  --color-card-border: #3b82f6;
-  --color-hover-bg: #f0f0f0;
-  --color-delete-hover: #fee2e2;
+  --color-avatar-bg: rgba(157, 78, 221, 0.3);
+  --color-card-border: rgba(157, 78, 221, 0.3);
+  --color-hover-bg: rgba(255, 255, 255, 0.05);
+  --color-delete-hover: rgba(255, 0, 127, 0.15);
   
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -66,10 +66,13 @@
   /* Global Layout Styles */
   width: 100vw;
   min-height: 100vh;
-  background: var(--color-background);
+  background: #0b0713;
+  background: radial-gradient(circle at 50% 0%, #1a0b2e 0%, #07030f 80%);
   display: flex;
+  gap: 1.5rem;
   overflow: hidden;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Outfit', sans-serif;
+  color: var(--color-white);
 }
 
 /* ===== CONTENT ===== */
@@ -87,35 +90,41 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--spacing-lg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
 }
 
 .pageTitle {
   font-size: var(--font-4xl);
-  font-weight: 700;
-  color: var(--color-black);
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .headerActions {
   display: flex;
   align-items: center;
   gap: var(--spacing-xl);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .avatarPlaceholder {
-  width: var(--avatar-size);
-  height: var(--avatar-size);
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--color-avatar-bg);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid rgba(157, 78, 221, 0.3);
+  transition: border-color 0.2s;
 }
 
-.avatarPlaceholder img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.avatarPlaceholder:hover {
+  border-color: var(--color-primary);
 }
 
 /* ===== CARDS CONTAINER ===== */
@@ -132,17 +141,19 @@
   width: var(--card-width);
   max-width: 100%;
   height: var(--card-height);
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 6px -1px var(--color-shadow);
-  border: 2px solid var(--color-card-border);
+  background: linear-gradient(135deg, #180f2d 0%, #0d081c 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(157, 78, 221, 0.2);
   position: relative;
   transition: var(--transition-default);
+  color: var(--color-white);
 }
 
 .accountCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 12px -1px var(--color-shadow);
+  border-color: var(--color-primary);
+  box-shadow: 0 15px 30px rgba(157, 78, 221, 0.25);
 }
 
 .iconEdit,
@@ -159,22 +170,24 @@
 .iconEdit {
   left: var(--spacing-lg);
   top: var(--spacing-lg);
-  color: var(--color-black);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .iconEdit:hover {
   background: var(--color-hover-bg);
+  color: white;
   transform: scale(1.1);
 }
 
 .iconDelete {
   right: var(--spacing-lg);
-  bottom: var(--spacing-lg);
-  color: var(--color-black);
+  top: var(--spacing-lg);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .iconDelete:hover {
   background: var(--color-delete-hover);
+  color: #ff007f;
   transform: scale(1.1);
 }
 
@@ -191,7 +204,9 @@
   font-weight: 700;
   font-size: var(--font-xl);
   margin: 0;
-  color: var(--color-black);
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .accountAvatar {
@@ -214,7 +229,7 @@
 .accountDetails {
   font-size: var(--font-sm);
   margin-top: var(--spacing-sm);
-  color: var(--color-black);
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
   line-height: 1.4;
 }
@@ -224,10 +239,10 @@
   width: var(--card-width);
   max-width: 100%;
   height: 170px;
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 6px -1px var(--color-shadow);
-  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -235,11 +250,14 @@
   cursor: pointer;
   transition: var(--transition-default);
   font-family: inherit;
+  color: var(--color-white);
 }
 
 .addAccountCard:hover {
   transform: scale(1.02);
-  box-shadow: 0 10px 15px -3px var(--color-shadow-hover);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(157, 78, 221, 0.3);
+  box-shadow: 0 15px 30px rgba(157, 78, 221, 0.15);
 }
 
 .addAccountCard:active {
@@ -250,13 +268,20 @@
   font-weight: 600;
   font-size: var(--font-xl);
   margin-bottom: var(--spacing-xl);
-  color: var(--color-black);
+  color: var(--color-white);
 }
 
 .addAccountIcon {
   font-size: var(--font-4xl);
   font-weight: 300;
-  color: var(--color-black);
+  color: var(--color-white);
+  background: rgba(157, 78, 221, 0.2);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== FORM CONTAINER ===== */
@@ -270,23 +295,27 @@
 .formCard {
   width: var(--form-width);
   max-width: 100%;
-  background: var(--color-white);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 6px -1px var(--color-shadow);
+  background: rgba(20, 14, 38, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   padding: var(--spacing-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .formHeader {
   margin-bottom: var(--spacing-2xl);
   padding-bottom: var(--spacing-lg);
-  border-bottom: 2px solid var(--color-border-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .formTitle {
   font-size: var(--font-3xl);
-  font-weight: 600;
-  color: var(--color-black);
+  font-weight: 800;
+  color: var(--color-white);
   margin: 0;
+  background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .formFields {
@@ -305,25 +334,28 @@
 
 .formGroup label {
   font-weight: 500;
-  font-size: var(--font-md);
-  color: var(--color-text);
+  font-size: var(--font-sm);
+  color: var(--color-text-light);
+  letter-spacing: 0.5px;
 }
 
 .formGroup input {
   padding: var(--spacing-md) var(--spacing-lg);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   font-size: var(--font-md);
   transition: var(--transition-default);
   outline: none;
   font-family: inherit;
   width: 100%;
-  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-white);
 }
 
 .formGroup input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.2);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .formGroup input::placeholder {
@@ -331,14 +363,14 @@
 }
 
 .inputDisabled {
-  background: var(--color-hover-bg);
-  color: var(--color-text-light);
+  background: rgba(255, 255, 255, 0.01) !important;
+  color: var(--color-text-muted) !important;
   cursor: not-allowed;
 }
 
 .inputDisabled:focus {
-  border-color: var(--color-border);
-  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
 }
 
 /* ===== VALIDATION STYLES ===== */
@@ -348,7 +380,7 @@
 
 .inputError:focus {
   border-color: var(--color-error) !important;
-  box-shadow: 0 0 0 3px var(--color-error-light) !important;
+  box-shadow: 0 0 0 2px var(--color-error-light) !important;
 }
 
 .fieldError {
@@ -376,7 +408,7 @@
   gap: var(--spacing-md);
   margin-top: var(--spacing-xl);
   padding-top: var(--spacing-xl);
-  border-top: 2px solid var(--color-border-light);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   justify-content: flex-end;
   flex-wrap: wrap;
 }
@@ -384,35 +416,37 @@
 .btnCancel,
 .btnAdd,
 .btnUpdate {
-  padding: 0.7rem var(--spacing-2xl);
+  padding: 0.65rem 1.25rem;
   border: none;
-  border-radius: var(--radius-lg);
-  font-weight: 600;
-  font-size: var(--font-md);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: var(--transition-default);
   min-width: 120px;
 }
 
 .btnCancel {
-  background: var(--color-border);
-  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .btnCancel:hover {
-  background: #d1d5db;
-  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: translateY(-1px);
 }
 
 .btnAdd {
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   color: var(--color-white);
+  box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
 }
 
 .btnAdd:hover {
-  background: var(--color-primary-hover);
-  transform: scale(1.02);
-  box-shadow: 0 4px 6px -1px rgba(69, 0, 67, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(157, 78, 221, 0.45);
 }
 
 .btnAdd:active {
@@ -420,14 +454,14 @@
 }
 
 .btnUpdate {
-  background: var(--color-secondary);
-  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-hover) 100%);
+  color: #000;
+  box-shadow: 0 5px 15px rgba(0, 240, 255, 0.3);
 }
 
 .btnUpdate:hover {
-  background: var(--color-secondary-hover);
-  transform: scale(1.02);
-  box-shadow: 0 4px 6px -1px var(--color-secondary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 240, 255, 0.45);
 }
 
 .btnUpdate:active {

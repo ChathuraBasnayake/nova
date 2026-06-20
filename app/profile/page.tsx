@@ -157,31 +157,31 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="profile-container">
+    <div className="profile-container dashboard">
       <Sidebar />
 
-      <main className="profile-main">
+      <main className="profile-main content">
         {/* Header */}
-        <header className="profile-header">
-          <h2 className="profile-title">User Profile</h2>
-          <div className="profile-header-actions">
+        <header className="profile-header content-header">
+          <h2 className="profile-title page-title">User Profile</h2>
+          <div className="profile-header-actions header-actions">
             <NotificationCenter />
             <div
-              className="profile-avatar-top"
+              className="profile-avatar-top avatar-container"
               onClick={handleAvatarClick}
               style={{ cursor: 'pointer' }}
             >
               <img
                 src={user?.avatarUrl || '/person-logo.png'}
                 alt="Profile Avatar"
-                className="top-avatar-img"
+                className="top-avatar-img avatar"
               />
             </div>
           </div>
         </header>
 
         <section className="profile-content-area">
-          <div className="profile-card">
+          <div className="profile-card glass-panel">
             {/* Top Section: Avatar & Basic Meta */}
             <div className="profile-card-header">
               <div className="avatar-upload-container">
@@ -316,11 +316,13 @@ export default function ProfilePage() {
         .profile-container {
           width: 100vw;
           min-height: 100vh;
-          background: #f1f1f1;
+          background: #0b0713;
+          background: radial-gradient(circle at 50% 0%, #1a0b2e 0%, #07030f 80%);
           display: flex;
           gap: 1.5rem;
           overflow: hidden;
-          font-family: system-ui, -apple-system, sans-serif;
+          font-family: 'Outfit', sans-serif;
+          color: white;
         }
 
         .profile-main {
@@ -341,9 +343,12 @@ export default function ProfilePage() {
 
         .profile-title {
           font-size: 28px;
-          font-weight: 700;
-          color: black;
+          font-weight: 800;
           margin: 0;
+          color: white;
+          background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
         .profile-header-actions {
@@ -365,7 +370,7 @@ export default function ProfilePage() {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          background: white;
+          background: transparent;
         }
 
         .profile-content-area {
@@ -378,11 +383,13 @@ export default function ProfilePage() {
         .profile-card {
           width: 800px;
           max-width: 100%;
-          background: white;
+          background: rgba(18, 11, 32, 0.65);
+          backdrop-filter: blur(16px);
           border-radius: 22px;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.02);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.35);
           padding: 2.5rem;
-          border: 1px solid rgba(0,0,0,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          color: white;
         }
 
         .profile-card-header {
@@ -421,8 +428,8 @@ export default function ProfilePage() {
           height: 100%;
           object-fit: cover;
           border-radius: 50%;
-          border: 3px solid white;
-          background: white;
+          border: 3px solid rgba(157, 78, 221, 0.3);
+          background: transparent;
         }
 
         .avatar-hover-overlay {
@@ -464,7 +471,7 @@ export default function ProfilePage() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(255, 255, 255, 0.85);
+          background: rgba(0, 0, 0, 0.6);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -486,9 +493,9 @@ export default function ProfilePage() {
         }
 
         .change-avatar-btn {
-          border: 1px solid #e5e7eb;
-          background: white;
-          color: #374151;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.8);
           font-size: 13px;
           font-weight: 600;
           padding: 6px 16px;
@@ -498,15 +505,16 @@ export default function ProfilePage() {
         }
 
         .change-avatar-btn:hover {
-          background: #f9fafb;
-          border-color: #d1d5db;
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+          color: white;
         }
 
         .profile-summary {
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
-          color: black;
+          color: white;
         }
 
         .profile-user-name {
@@ -520,22 +528,23 @@ export default function ProfilePage() {
           font-size: 10px;
           font-weight: 800;
           letter-spacing: 1px;
-          background: #e8d5e7;
-          color: #450043;
+          background: rgba(157, 78, 221, 0.2);
+          color: #d8b4fe;
           padding: 3px 10px;
           border-radius: 12px;
           width: fit-content;
+          border: 1px solid rgba(157, 78, 221, 0.3);
         }
 
         .profile-user-username {
           font-size: 14px;
-          color: #6b7280;
+          color: rgba(255, 255, 255, 0.5);
           margin: 0.25rem 0 0 0;
         }
 
         .divider {
           border: 0;
-          border-top: 1px solid #e5e7eb;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
           margin: 2rem 0;
         }
 
@@ -553,15 +562,15 @@ export default function ProfilePage() {
         }
 
         .form-message.success {
-          background: #def7ec;
-          color: #03543f;
-          border: 1px solid #bcf0da;
+          background: rgba(0, 240, 255, 0.1);
+          color: #00f0ff;
+          border: 1px solid rgba(0, 240, 255, 0.25);
         }
 
         .form-message.error {
-          background: #fde8e8;
-          color: #9b1c1c;
-          border: 1px solid #f8b4b4;
+          background: rgba(255, 0, 127, 0.15);
+          color: #ff007f;
+          border: 1px solid rgba(255, 0, 127, 0.3);
         }
 
         .form-grid {
@@ -579,40 +588,41 @@ export default function ProfilePage() {
         .form-field label {
           font-size: 13px;
           font-weight: 700;
-          color: #4b5563;
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .form-input {
           height: 48px;
-          border: 1.5px solid #d1d5db;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 12px;
           padding: 0 1rem;
           font-size: 15px;
           outline: none;
-          color: black;
-          background: white;
+          color: white;
+          background: rgba(255, 255, 255, 0.03);
           transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .form-input:focus {
-          border-color: #9a5c97;
-          box-shadow: 0 0 0 3px rgba(154, 92, 151, 0.15);
+          border-color: #9d4edd;
+          box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.2);
+          background: rgba(255, 255, 255, 0.05);
         }
 
         .form-input-disabled {
           height: 48px;
-          border: 1.5px solid #e5e7eb;
+          border: 1px solid rgba(255, 255, 255, 0.05);
           border-radius: 12px;
           padding: 0 1rem;
           font-size: 15px;
-          color: #9ca3af;
-          background: #f9fafb;
+          color: rgba(255, 255, 255, 0.4);
+          background: rgba(255, 255, 255, 0.01);
           cursor: not-allowed;
         }
 
         .field-help {
           font-size: 11px;
-          color: #9ca3af;
+          color: rgba(255, 255, 255, 0.4);
         }
 
         .form-actions {
@@ -624,20 +634,20 @@ export default function ProfilePage() {
         .save-profile-btn {
           height: 50px;
           padding: 0 2.5rem;
-          background: linear-gradient(135deg, #450043, #9a5c97);
+          background: linear-gradient(135deg, #9d4edd 0%, #b5179e 100%);
           color: white;
           border: none;
           border-radius: 25px;
           font-weight: 700;
           font-size: 15px;
-          box-shadow: 0 8px 20px rgba(69, 0, 67, 0.2);
+          box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
           cursor: pointer;
           transition: all 0.3s;
         }
 
         .save-profile-btn:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 12px 25px rgba(69, 0, 67, 0.25);
+          box-shadow: 0 8px 20px rgba(157, 78, 221, 0.45);
         }
 
         .save-profile-btn:active:not(:disabled) {

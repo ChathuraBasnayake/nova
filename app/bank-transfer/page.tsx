@@ -929,7 +929,7 @@ export default function Home() {
                     {pendingSplits.map((item) => (
                       <div
                         key={item.id}
-                        className="p-4 bg-gray-55 rounded-2xl border border-gray-100 hover:border-gray-200 transition flex flex-col justify-between"
+                        className="p-4 bg-gray-50 rounded-2xl border border-gray-200 hover:border-gray-300 transition flex flex-col justify-between"
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2">
@@ -939,17 +939,17 @@ export default function Home() {
                             >
                               From: {item.requesterFullName}
                             </span>
-                            <span className="font-extrabold text-[#450043] text-xs shrink-0">
+                            <span className="font-extrabold text-[#9a5c97] text-xs shrink-0 bg-[#fce4ff] px-2 py-1 rounded">
                               Rs.{' '}
                               {Number(item.amount).toLocaleString('en-US', {
                                 minimumFractionDigits: 2
                               })}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-600 mt-2 bg-white/70 p-2 rounded-lg border border-gray-100">
+                          <p className="text-xs text-gray-800 font-medium mt-2 bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm">
                             "{item.description}"
                           </p>
-                          <p className="text-[9px] text-gray-400 mt-2">
+                          <p className="text-[10px] text-gray-500 mt-2 font-medium">
                             Requested on:{' '}
                             {new Date(item.createdAt).toLocaleDateString(
                               'en-US',
@@ -957,16 +957,16 @@ export default function Home() {
                             )}
                           </p>
                         </div>
-                        <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-100/50">
+                        <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-200">
                           <button
                             onClick={() => handleDeclineSplit(item.id)}
-                            className="text-xs text-red-600 hover:text-red-800 font-bold transition px-3 py-1.5 rounded-lg hover:bg-red-50"
+                            className="text-xs text-white bg-red-500 hover:bg-red-600 font-bold transition px-3 py-1.5 rounded-lg shadow-sm"
                           >
                             Decline
                           </button>
                           <button
                             onClick={() => handleOpenApproveSplit(item)}
-                            className="text-xs text-white bg-[#450043] hover:bg-[#9a5c97] font-bold transition px-3.5 py-1.5 rounded-lg shadow-sm"
+                            className="text-xs text-white bg-green-600 hover:bg-green-700 font-bold transition px-3.5 py-1.5 rounded-lg shadow-sm"
                           >
                             Approve & Pay
                           </button>
@@ -996,7 +996,7 @@ export default function Home() {
                     {scheduledTransfers.map((item) => (
                       <div
                         key={item.id}
-                        className="p-4 bg-gray-55 rounded-2xl border border-gray-100 hover:border-gray-200 transition relative flex flex-col justify-between"
+                        className="p-4 bg-gray-50 rounded-2xl border border-gray-200 hover:border-gray-300 transition relative flex flex-col justify-between"
                       >
                         <div>
                           <div className="flex justify-between items-start">
@@ -1018,7 +1018,7 @@ export default function Home() {
                             To: {item.toAccount}
                           </p>
                         </div>
-                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100/50">
+                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-200">
                           <p className="text-[10px] text-gray-400">
                             Next:{' '}
                             {new Date(item.nextRun).toLocaleDateString(

@@ -178,7 +178,7 @@ export default function SmartSpendPage() {
       : ''
 
   return (
-    <main className="smart-spend-layout">
+    <main className="smart-spend-layout dashboard">
       <Sidebar />
 
       <section className="content">
@@ -365,12 +365,12 @@ export default function SmartSpendPage() {
                         >
                           <stop
                             offset="0%"
-                            stopColor="#9a5c97"
+                            stopColor="#9d4edd"
                             stopOpacity="0.4"
                           />
                           <stop
                             offset="100%"
-                            stopColor="#9a5c97"
+                            stopColor="#9d4edd"
                             stopOpacity="0"
                           />
                         </linearGradient>
@@ -382,7 +382,7 @@ export default function SmartSpendPage() {
                         y1="170"
                         x2="450"
                         y2="170"
-                        stroke="#eee"
+                        stroke="rgba(255,255,255,0.1)"
                         strokeWidth="1"
                       />
                       <line
@@ -390,7 +390,7 @@ export default function SmartSpendPage() {
                         y1="100"
                         x2="450"
                         y2="100"
-                        stroke="#eee"
+                        stroke="rgba(255,255,255,0.1)"
                         strokeWidth="1"
                         strokeDasharray="4"
                       />
@@ -399,7 +399,7 @@ export default function SmartSpendPage() {
                         y1="30"
                         x2="450"
                         y2="30"
-                        stroke="#eee"
+                        stroke="rgba(255,255,255,0.1)"
                         strokeWidth="1"
                         strokeDasharray="4"
                       />
@@ -412,7 +412,7 @@ export default function SmartSpendPage() {
                         <path
                           d={pathD}
                           fill="none"
-                          stroke="#450043"
+                          stroke="#00f0ff"
                           strokeWidth="3.5"
                           strokeLinecap="round"
                         />
@@ -425,8 +425,8 @@ export default function SmartSpendPage() {
                             cx={p.x}
                             cy={p.y}
                             r="5"
-                            fill="#450043"
-                            stroke="#fff"
+                            fill="#00f0ff"
+                            stroke="#120b20"
                             strokeWidth="2.5"
                           />
                           <circle
@@ -664,11 +664,13 @@ export default function SmartSpendPage() {
         .smart-spend-layout {
           width: 100vw;
           min-height: 100vh;
-          background: #f1f1f1;
+          background: #0b0713;
+          background: radial-gradient(circle at 50% 0%, #1a0b2e 0%, #07030f 80%);
           display: flex;
           gap: 1.5rem;
           overflow: hidden;
-          font-family: var(--font-bai, 'Bai Jamjuree'), system-ui, -apple-system, sans-serif;
+          font-family: 'Outfit', sans-serif;
+          color: white;
         }
 
         .content {
@@ -682,42 +684,59 @@ export default function SmartSpendPage() {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-wrap: wrap;
+          gap: 1rem;
           margin-bottom: 2rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          padding-bottom: 1rem;
         }
 
         .page-title {
           font-size: 28px;
-          font-weight: 700;
-          color: black;
+          font-weight: 800;
+          color: white;
+          background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
         .header-actions {
           display: flex;
           align-items: center;
           gap: 1.5rem;
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .logout-button {
-          background: #450043;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           color: white;
-          border: none;
-          padding: 8px 16px;
+          padding: 8px 18px;
           border-radius: 20px;
-          font-weight: bold;
-          font-size: 0.8rem;
+          font-weight: 700;
+          font-size: 0.75rem;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.2s;
+          letter-spacing: 0.5px;
         }
 
         .logout-button:hover {
-          background: #60005d;
+          background: rgba(255, 0, 127, 0.15);
+          border-color: rgba(255, 0, 127, 0.3);
+          box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
         }
 
         .avatar {
-          width: 45px;
-          height: 45px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           object-fit: cover;
+          border: 2px solid rgba(157, 78, 221, 0.3);
+          transition: border-color 0.2s;
+        }
+
+        .avatar:hover {
+          border-color: #9d4edd;
         }
 
         .loading-container {
@@ -757,19 +776,21 @@ export default function SmartSpendPage() {
         }
 
         .card {
-          background: white;
-          border-radius: 18px;
+          background: rgba(18, 11, 32, 0.65);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 20px;
           padding: 1.5rem;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-          color: black;
-          border: 1px solid rgba(0,0,0,0.03);
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+          color: white;
         }
 
         .card-title {
           font-size: 18px;
-          font-weight: 700;
-          color: #450043;
+          font-weight: 800;
+          color: white;
           margin-bottom: 1.25rem;
+          letter-spacing: 0.5px;
         }
 
         .donut-section {
@@ -798,12 +819,12 @@ export default function SmartSpendPage() {
         .center-amount {
           font-size: 10px;
           font-weight: 800;
-          fill: #450043;
+          fill: #00f0ff;
         }
 
         .center-label {
           font-size: 7px;
-          fill: #777;
+          fill: rgba(255, 255, 255, 0.5);
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -842,7 +863,7 @@ export default function SmartSpendPage() {
         }
 
         .legend-item.highlight {
-          background-color: #f7f3f7;
+          background-color: rgba(255, 255, 255, 0.05);
         }
 
         .legend-item .dot {
@@ -854,17 +875,17 @@ export default function SmartSpendPage() {
 
         .legend-item .label {
           font-weight: 600;
-          color: #4b5563;
+          color: rgba(255, 255, 255, 0.8);
         }
 
         .legend-item .value {
           margin-left: auto;
-          color: #777;
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .empty-chart-msg {
           text-align: center;
-          color: #777;
+          color: rgba(255, 255, 255, 0.4);
           padding: 3rem 1rem;
           font-weight: 500;
         }
@@ -884,7 +905,7 @@ export default function SmartSpendPage() {
           display: none;
           font-size: 9px;
           font-weight: 700;
-          fill: #450043;
+          fill: #00f0ff;
         }
 
         .trend-node:hover text.node-tooltip {
@@ -898,7 +919,7 @@ export default function SmartSpendPage() {
         .node-axis-label {
           font-size: 10px;
           font-weight: 600;
-          fill: #6b7280;
+          fill: rgba(255, 255, 255, 0.5);
         }
 
         /* Budget Limits */
@@ -910,23 +931,24 @@ export default function SmartSpendPage() {
         }
 
         .add-budget-btn {
-          background: #9a5c97;
-          color: white;
-          border: none;
+          background: rgba(157, 78, 221, 0.15);
+          border: 1px solid rgba(157, 78, 221, 0.3);
+          color: #e0aaff;
           padding: 8px 14px;
-          border-radius: 20px;
+          border-radius: 12px;
           font-size: 0.8rem;
           font-weight: 700;
           cursor: pointer;
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          box-shadow: 0 4px 6px rgba(154, 92, 151, 0.2);
-          transition: all 0.2s;
+          transition: all 0.25s;
         }
 
         .add-budget-btn:hover {
-          background: #450043;
+          background: #9d4edd;
+          color: white;
+          box-shadow: 0 0 12px rgba(157, 78, 221, 0.4);
           transform: translateY(-1px);
         }
 
@@ -956,8 +978,8 @@ export default function SmartSpendPage() {
         }
 
         .warning-badge {
-          background-color: #ffe3e3;
-          color: #ff6b6b;
+          background-color: rgba(255, 0, 127, 0.15);
+          color: #ff007f;
           font-size: 0.7rem;
           font-weight: 700;
           padding: 2px 8px;
@@ -966,7 +988,7 @@ export default function SmartSpendPage() {
         }
 
         .alert-badge {
-          background-color: #fff9db;
+          background-color: rgba(255, 212, 59, 0.15);
           color: #ffd43b;
           font-size: 0.7rem;
           font-weight: 700;
@@ -984,7 +1006,7 @@ export default function SmartSpendPage() {
         .delete-btn {
           background: transparent;
           border: none;
-          color: #adb5bd;
+          color: rgba(255, 255, 255, 0.4);
           cursor: pointer;
           padding: 4px;
           border-radius: 4px;
@@ -992,14 +1014,14 @@ export default function SmartSpendPage() {
         }
 
         .delete-btn:hover {
-          color: #e03131;
-          background: #fff5f5;
+          color: #ff007f;
+          background: rgba(255, 0, 127, 0.15);
         }
 
         .budget-bar-container {
           width: 100%;
           height: 8px;
-          background-color: #f1f3f5;
+          background-color: rgba(255, 255, 255, 0.05);
           border-radius: 4px;
           overflow: hidden;
         }
@@ -1014,27 +1036,28 @@ export default function SmartSpendPage() {
           display: flex;
           justify-content: space-between;
           font-size: 0.8rem;
-          color: #4b5563;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .budget-amounts strong {
+          color: white;
         }
 
         .no-limit {
-          color: #9a5c97;
+          color: #00f0ff;
           font-weight: 600;
           text-decoration: underline;
           cursor: pointer;
         }
 
         .no-limit:hover {
-          color: #450043;
+          color: white;
         }
 
         /* AI insights card */
         .ai-insights-card {
-          background: linear-gradient(135deg, #450043, #9a5c97);
-          color: white !important;
-        }
-
-        .ai-insights-card .card-title {
+          background: linear-gradient(135deg, rgba(157, 78, 221, 0.15) 0%, rgba(0, 240, 255, 0.05) 100%);
+          border: 1px solid rgba(157, 78, 221, 0.3);
           color: white;
         }
 
@@ -1046,19 +1069,20 @@ export default function SmartSpendPage() {
         }
 
         .ask-ai-link {
-          background: rgba(255, 255, 255, 0.15);
-          border: none;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           color: white;
           font-size: 0.8rem;
           font-weight: 700;
           padding: 8px 12px;
           border-radius: 8px;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.2s;
         }
 
         .ask-ai-link:hover {
-          background: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
         }
 
         /* Modal styling */
@@ -1068,59 +1092,65 @@ export default function SmartSpendPage() {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: rgba(0,0,0,0.5);
+          background-color: rgba(5, 2, 10, 0.8);
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 100;
-          backdrop-filter: blur(4px);
+          z-index: 1000;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
         }
 
         .modal-content {
-          background: white;
-          border-radius: 18px;
+          background: rgba(20, 14, 38, 0.95);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 20px;
           width: 100%;
-          max-width: 450px;
-          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-          color: black;
+          max-width: 440px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+          color: white;
           overflow: hidden;
         }
 
         .modal-header {
-          padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid #f1f3f5;
+          padding: 1.5rem 2rem 1rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
           display: flex;
           justify-content: space-between;
           align-items: center;
         }
 
         .modal-header h3 {
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: #450043;
+          font-size: 1.3rem;
+          font-weight: 800;
+          color: white;
+          margin: 0;
+          background: linear-gradient(135deg, #ffffff 0%, #d8b4fe 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
         .close-modal-btn {
           background: transparent;
           border: none;
-          color: #868e96;
+          color: rgba(255, 255, 255, 0.5);
           cursor: pointer;
         }
 
         .close-modal-btn:hover {
-          color: #212529;
+          color: white;
         }
 
         .modal-form {
-          padding: 1.5rem;
+          padding: 1.5rem 2rem 2rem;
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
         }
 
         .modal-error {
-          background-color: #fff5f5;
-          color: #c92a2a;
+          background-color: rgba(255, 0, 127, 0.15);
+          color: #ff007f;
           padding: 10px;
           border-radius: 8px;
           font-size: 0.85rem;
@@ -1134,22 +1164,33 @@ export default function SmartSpendPage() {
         }
 
         .form-group label {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           font-weight: 700;
-          color: #495057;
+          color: rgba(255, 255, 255, 0.6);
+          letter-spacing: 0.5px;
         }
 
         .modal-select, .modal-input {
-          height: 48px;
-          border: 1px solid #ced4da;
-          border-radius: 8px;
+          height: 44px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 10px;
           padding: 0 12px;
           font-size: 0.95rem;
+          color: white;
           outline: none;
+          transition: all 0.3s;
+        }
+
+        .modal-select option {
+          background: #140e26;
+          color: white;
         }
 
         .modal-select:focus, .modal-input:focus {
-          border-color: #9a5c97;
+          border-color: #9d4edd;
+          box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.2);
+          background: rgba(255, 255, 255, 0.05);
         }
 
         .modal-actions {
@@ -1160,34 +1201,47 @@ export default function SmartSpendPage() {
         }
 
         .cancel-btn {
-          height: 48px;
-          border: none;
-          background: #f1f3f5;
-          color: #495057;
+          height: 44px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.7);
           padding: 0 20px;
-          border-radius: 24px;
+          border-radius: 10px;
           font-weight: 700;
+          font-size: 0.85rem;
           cursor: pointer;
+          transition: all 0.2s;
         }
 
         .cancel-btn:hover {
-          background: #e9ecef;
+          background: rgba(255, 255, 255, 0.1);
+          color: white;
         }
 
         .submit-btn {
-          height: 48px;
+          height: 44px;
           border: none;
-          background: #9a5c97;
+          background: linear-gradient(135deg, #9d4edd 0%, #b5179e 100%);
           color: white;
           padding: 0 24px;
-          border-radius: 24px;
+          border-radius: 10px;
           font-weight: 700;
+          font-size: 0.85rem;
           cursor: pointer;
-          box-shadow: 0 4px 6px rgba(154, 92, 151, 0.2);
+          box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+          transition: all 0.3s;
         }
 
         .submit-btn:hover {
-          background: #450043;
+          transform: translateY(-1px);
+          box-shadow: 0 8px 20px rgba(157, 78, 221, 0.45);
+        }
+
+        .submit-btn:disabled {
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.3);
+          box-shadow: none;
+          cursor: not-allowed;
         }
 
         @media (max-width: 1024px) {

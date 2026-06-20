@@ -320,7 +320,7 @@ export default function AiChat() {
 
         .nova .message-bubble {
           background: white;
-          color: #212529;
+          color: black;
           border-bottom-left-radius: 2px;
           border: 1px solid rgba(0,0,0,0.05);
         }
